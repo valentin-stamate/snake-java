@@ -1,5 +1,6 @@
 package board;
 
+import board.food.Food;
 import board.snake.Snake;
 import processing.core.PApplet;
 import processing.event.KeyEvent;
@@ -18,6 +19,7 @@ public class Board {
     private final int[][] boardMatrix;
 
     private final Snake snake;
+    private final Food food;
 
     public Board(PApplet parent, int xStart, int yStart, int rows, int columns, int cellSize) {
         this.parentContext = parent;
@@ -29,7 +31,8 @@ public class Board {
 
         this.boardMatrix = new int[rows][columns];
 
-        snake = new Snake(boardMatrix);
+        snake = new Snake(boardMatrix, rows, columns);
+        food = new Food(boardMatrix, rows, columns);
 
         parentContext.registerMethod("draw", this);
         parentContext.registerMethod("keyEvent", this);
@@ -37,7 +40,14 @@ public class Board {
 
     public void draw() {
 
-        if (parentContext.frameCount % 40 == 0) {
+        if (parentContext.frameCount % 10 == 0) {
+            int snakeHeadI = snake.getNextI();
+            int snakeHeadJ = snake.getNextJ();
+
+            if (food.isEaten(snakeHeadI, snakeHeadJ)) {
+                snake.setIncrease();
+            }
+
             snake.makeStep();
         }
 
@@ -45,13 +55,20 @@ public class Board {
             for (int j = 0; j < columns; j++) {
                 switch (boardMatrix[i][j]) {
                     case CellType.SNAKE_HEAD_CELL:
+                        parentContext.fill(175);
+                        break;
+                    case CellType.FOOD_CELL:
                         parentContext.fill(235, 64, 52);
+                        break;
+                    case CellType.SNAKE_CELL:
+                        parentContext.fill(255);
                         break;
                     default:
                         parentContext.fill(20);
                         break;
                 }
-                parentContext.stroke(255);
+                parentContext.stroke(20);
+                parentContext.strokeWeight(4);
                 parentContext.rect(xStart + j * cellSize, yStart + i * cellSize, cellSize, cellSize);
             }
         }

@@ -9,31 +9,57 @@ public class Snake {
 
     private final int[] direction = new int[]{0, 1};
 
-    private final SnakeCell shakeHead;
-    private final List<SnakeCell> tail;
+    private final List<SnakeCell> snakeCells;
 
     private final int[][] boardMatrix;
+    private final int rows;
+    private final int columns;
 
     private boolean moveConsumed = true;
+    private boolean snakeIncreaseConsumed = true;
 
-    public Snake(int[][] boardMatrix) {
-        this.shakeHead = new SnakeCell(1, 1);
+    public Snake(int[][] boardMatrix, int rows, int columns) {
+        snakeCells = new ArrayList<>();
+        this.snakeCells.add(new SnakeCell(1, 5));
+        this.snakeCells.add(new SnakeCell(1, 4));
+        this.snakeCells.add(new SnakeCell(1, 3));
+        this.snakeCells.add(new SnakeCell(1, 2));
         this.boardMatrix = boardMatrix;
-        tail = new ArrayList<>();
+        this.rows = rows;
+        this.columns = columns;
     }
 
     public void makeStep() {
-        int i = shakeHead.getI();
-        int j = shakeHead.getJ();
-        boardMatrix[i][j] = CellType.EMPTY_CELL;
 
         int newI = getNextI();
         int newJ = getNextJ();
 
-        /* TODO Verify collision with tail and wall */
-        shakeHead.updatePosition(newI, newJ);
+        if (newI >= rows || newJ >= columns || newI < 0 || newJ < 0) {
+            /* TODO handle game over */
+            return;
+        }
 
-        boardMatrix[newI][newJ] = CellType.SNAKE_HEAD_CELL;
+        /* TODO handle tail byte */
+
+        SnakeCell head = snakeCells.get(0);
+        boardMatrix[head.getI()][head.getJ()] = CellType.SNAKE_CELL;
+
+        SnakeCell endTail = snakeCells.get(snakeCells.size() - 1);
+        SnakeCell copyEndTail = endTail.getCopy();
+
+        endTail.updatePosition(newI, newJ);
+        snakeCells.remove(endTail);
+
+        snakeCells.add(0, endTail);
+        boardMatrix[getHeadI()][getHeadJ()] = CellType.SNAKE_HEAD_CELL;
+
+        if (!snakeIncreaseConsumed) {
+            snakeCells.add(copyEndTail);
+            snakeIncreaseConsumed = true;
+        } else {
+            boardMatrix[copyEndTail.getI()][copyEndTail.getJ()] = CellType.EMPTY_CELL;
+        }
+
         moveConsumed = true;
     }
 
@@ -81,12 +107,23 @@ public class Snake {
         moveConsumed = false;
     }
 
-    private int getNextI() {
-        return shakeHead.getI() + direction[0];
+    public int getNextI() {
+        return snakeCells.get(0).getI() + direction[0];
     }
 
-    private int getNextJ() {
-        return shakeHead.getJ() + direction[1];
+    public int getNextJ() {
+        return snakeCells.get(0).getJ() + direction[1];
     }
 
+    public int getHeadI() {
+        return snakeCells.get(0).getI();
+    }
+
+    public int getHeadJ() {
+        return snakeCells.get(0).getJ();
+    }
+
+    public void setIncrease() {
+        snakeIncreaseConsumed = false;
+    }
 }

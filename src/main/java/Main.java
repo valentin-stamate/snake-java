@@ -7,7 +7,7 @@ public class Main extends PApplet {
     private final int cellSize = 40;
 
     public void settings() {
-        size(641, 640);
+        size(720, 640);
     }
 
     public void setup() {
