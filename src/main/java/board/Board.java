@@ -44,8 +44,8 @@ public class Board {
     public void draw() {
 
         if (parentContext.frameCount % 10 == 0) {
-            int snakeHeadI = snake.getNextI();
-            int snakeHeadJ = snake.getNextJ();
+            int snakeHeadI = snake.getHeadI();
+            int snakeHeadJ = snake.getHeadJ();
 
             if (food.isEaten(snakeHeadI, snakeHeadJ)) {
                 snake.setIncrease();

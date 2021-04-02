@@ -2,6 +2,9 @@ package board.food;
 
 import board.CellType;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Food {
 
     private int i = 0;
@@ -19,15 +22,32 @@ public class Food {
     }
 
     private void putRandom() {
-        int randomI = ((int)(Math.random() * 1000)) % rows;
-        int randomJ = ((int)(Math.random() * 1000)) % columns;
-
         boardMatrix[i][j] = CellType.EMPTY_CELL;
 
-        i = randomI;
-        j = randomJ;
+        List<Integer> freeCells = new ArrayList<>();
+
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < columns; j++) {
+                if (boardMatrix[i][j] == CellType.EMPTY_CELL) {
+                    freeCells.add(i * columns + j);
+                }
+            }
+        }
+
+        int rCellPosition = generateRandom(freeCells.size());
+
+        i = freeCells.get(rCellPosition) / columns;
+        j = freeCells.get(rCellPosition) % columns;
+
+        if (boardMatrix[i][j] == CellType.SNAKE_CELL) {
+            System.out.println("ups");
+        }
 
         boardMatrix[i][j] = CellType.FOOD_CELL;
+    }
+
+    private int generateRandom(int n) {
+        return ((int)(Math.random() * 100000)) % n;
     }
 
     public boolean isEaten(int snakeI, int snakeJ) {
