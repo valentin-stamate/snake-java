@@ -2,6 +2,7 @@ package board;
 
 import board.food.Food;
 import board.snake.Snake;
+import observer.Observer;
 import processing.core.PApplet;
 import processing.event.KeyEvent;
 
@@ -36,6 +37,8 @@ public class Board {
 
         parentContext.registerMethod("draw", this);
         parentContext.registerMethod("keyEvent", this);
+
+        snake.onCrashListener(snake::resetSnake);
     }
 
     public void draw() {

@@ -1,11 +1,14 @@
 package board.snake;
 
 import board.CellType;
+import observer.Observer;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class Snake {
+
+    private final List<Observer> snakeCollisionObserverList;
 
     private final int[] direction = new int[]{0, 1};
 
@@ -19,14 +22,41 @@ public class Snake {
     private boolean snakeIncreaseConsumed = true;
 
     public Snake(int[][] boardMatrix, int rows, int columns) {
-        snakeCells = new ArrayList<>();
+        this.boardMatrix = boardMatrix;
+        this.rows = rows;
+        this.columns = columns;
+        this.snakeCells = new ArrayList<>();
+        snakeCollisionObserverList = new ArrayList<>();
+        initialize();
+    }
+
+    public void resetSnake() {
+        initialize();
+    }
+
+    private void initialize() {
+        snakeCells.forEach(snakeCell -> {
+            int i = snakeCell.getI();
+            int j = snakeCell.getJ();
+            boardMatrix[i][j] = CellType.EMPTY_CELL;
+        });
+
+        snakeCells.clear();
+
         this.snakeCells.add(new SnakeCell(1, 5));
         this.snakeCells.add(new SnakeCell(1, 4));
         this.snakeCells.add(new SnakeCell(1, 3));
         this.snakeCells.add(new SnakeCell(1, 2));
-        this.boardMatrix = boardMatrix;
-        this.rows = rows;
-        this.columns = columns;
+
+        direction[0] = 0;
+        direction[1] = 1;
+
+        moveConsumed = true;
+        snakeIncreaseConsumed = true;
+    }
+
+    public void onCrashListener(Observer observer) {
+        snakeCollisionObserverList.add(observer);
     }
 
     public void makeStep() {
@@ -35,11 +65,14 @@ public class Snake {
         int newJ = getNextJ();
 
         if (newI >= rows || newJ >= columns || newI < 0 || newJ < 0) {
-            /* TODO handle game over */
+            onSnakeCollide();
             return;
         }
 
-        /* TODO handle tail byte */
+        if (boardMatrix[newI][newJ] == CellType.SNAKE_CELL) {
+            onSnakeCollide();
+            return;
+        }
 
         SnakeCell head = snakeCells.get(0);
         boardMatrix[head.getI()][head.getJ()] = CellType.SNAKE_CELL;
@@ -61,6 +94,10 @@ public class Snake {
         }
 
         moveConsumed = true;
+    }
+
+    private void onSnakeCollide() {
+        snakeCollisionObserverList.forEach(Observer::update);
     }
 
     public boolean haveMoveConsumed() {

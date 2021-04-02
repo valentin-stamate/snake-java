@@ -27,4 +27,5 @@ class SnakeCell {
     public SnakeCell getCopy() {
         return new SnakeCell(i, j);
     }
+
 }
