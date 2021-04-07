@@ -53,7 +53,7 @@ public class Board {
 
     public void draw() {
 
-        if (parentContext.frameCount % 3 == 0) {
+        if (parentContext.frameCount % 10 == 0) {
             for (Snake snake : snakeList) {
                 if (snake.isFinished()) {
                     continue;

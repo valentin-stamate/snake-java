@@ -161,6 +161,14 @@ public class Snake {
         }
 
         moveConsumed = true;
+        updateSnakeTail();
+    }
+
+    private void updateSnakeTail() {
+        for (int i = 0; i < snakeCells.size(); i++) {
+            SnakeCell snakeCell = snakeCells.get(i);
+            boardMatrix[snakeCell.getI()][snakeCell.getJ()] = i == 0 ? CellType.SNAKE_HEAD_CELL : CellType.SNAKE_CELL;
+        }
     }
 
     private void onSnakeCollide() {
