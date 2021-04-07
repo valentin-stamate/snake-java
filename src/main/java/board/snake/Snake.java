@@ -24,13 +24,16 @@ public class Snake {
     private boolean snakeIncreaseConsumed = true;
     private boolean snakeFinished = false;
 
+    private int score;
+
     public Snake(int[][] boardMatrix, int rows, int columns) {
         this.boardMatrix = boardMatrix;
         this.rows = rows;
         this.columns = columns;
         this.snakeCells = new ArrayList<>();
         this.snakeCellsHashSet = new HashSet<>();
-        snakeCollisionObserverList = new ArrayList<>();
+        this.snakeCollisionObserverList = new ArrayList<>();
+        this.score = 0;
         initialize();
     }
 
@@ -237,6 +240,11 @@ public class Snake {
 
     public void setIncrease() {
         snakeIncreaseConsumed = false;
+        score += 3;
+    }
+
+    public int getScore() {
+        return score;
     }
 
     private int generateRandom(int start, int end) {
