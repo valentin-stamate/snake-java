@@ -4,6 +4,7 @@ import board.CellType;
 import observer.Observer;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 public class Snake {
@@ -13,6 +14,7 @@ public class Snake {
     private final int[] direction = new int[]{0, 1};
 
     private final List<SnakeCell> snakeCells;
+    private final HashSet<SnakeCell> snakeCellsHashSet;
 
     private final int[][] boardMatrix;
     private final int rows;
@@ -27,6 +29,7 @@ public class Snake {
         this.rows = rows;
         this.columns = columns;
         this.snakeCells = new ArrayList<>();
+        this.snakeCellsHashSet = new HashSet<>();
         snakeCollisionObserverList = new ArrayList<>();
         initialize();
     }
@@ -37,7 +40,7 @@ public class Snake {
         int i = generateRandom(5, rows - 5);
         int j = generateRandom(5, columns - 5);
 
-        int startingLength = 2;
+        int startingLength = 4;
 
         for (int l = 0; l < startingLength; l++) {
             SnakeCell lastSnakeCell = new SnakeCell(i, j);
@@ -45,10 +48,12 @@ public class Snake {
 
             List<SnakeCell> neighbours = getSnakeCellNeighbours(lastSnakeCell);
             snakeCells.add(lastSnakeCell);
+            snakeCellsHashSet.add(lastSnakeCell);
 
             SnakeCell randomCell = neighbours.get(generateRandom(0, neighbours.size()));
 
-            snakeCells.add(randomCell);
+            i = randomCell.getI();
+            j = randomCell.getJ();
 
             if (l == 0) {
                 direction[0] = lastSnakeCell.getI() - randomCell.getI();
@@ -126,7 +131,7 @@ public class Snake {
             return;
         }
 
-        if (boardMatrix[newI][newJ] == CellType.SNAKE_CELL) {
+        if (snakeCellsHashSet.contains(new SnakeCell(newI, newJ))) {
             onSnakeCollide();
             return;
         }
@@ -137,14 +142,19 @@ public class Snake {
         SnakeCell endTail = snakeCells.get(snakeCells.size() - 1);
         SnakeCell copyEndTail = endTail.getCopy();
 
-        endTail.updatePosition(newI, newJ);
         snakeCells.remove(endTail);
+        snakeCellsHashSet.remove(endTail);
+
+        endTail = new SnakeCell(newI, newJ);
 
         snakeCells.add(0, endTail);
+        snakeCellsHashSet.add(endTail);
+
         boardMatrix[getHeadI()][getHeadJ()] = CellType.SNAKE_HEAD_CELL;
 
         if (!snakeIncreaseConsumed) {
             snakeCells.add(copyEndTail);
+            snakeCellsHashSet.add(copyEndTail);
             snakeIncreaseConsumed = true;
         } else {
             boardMatrix[copyEndTail.getI()][copyEndTail.getJ()] = CellType.EMPTY_CELL;
