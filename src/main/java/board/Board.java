@@ -2,7 +2,6 @@ package board;
 
 import board.food.Food;
 import board.snake.Snake;
-import observer.Observer;
 import processing.core.PApplet;
 import processing.event.KeyEvent;
 
@@ -12,6 +11,8 @@ public class Board {
 
     private final int xStart;
     private final int yStart;
+    private final int boardWidth;
+    private final int boardHeight;
     private final int rows;
     private final int columns;
 
@@ -22,13 +23,15 @@ public class Board {
     private final Snake snake;
     private final Food food;
 
-    public Board(PApplet parent, int xStart, int yStart, int rows, int columns, int cellSize) {
+    public Board(PApplet parent, int xStart, int yStart, int boardWidth, int boardHeight, int rows, int columns, int cellSize) {
         this.parentContext = parent;
         this.xStart = xStart;
         this.yStart = yStart;
         this.rows = rows;
         this.columns = columns;
         this.cellSize = cellSize;
+        this.boardWidth = boardWidth;
+        this.boardHeight = boardHeight;
 
         this.boardMatrix = new int[rows][columns];
 
@@ -43,9 +46,9 @@ public class Board {
 
     public void draw() {
 
-        if (parentContext.frameCount % 10 == 0) {
-            int snakeHeadI = snake.getHeadI();
-            int snakeHeadJ = snake.getHeadJ();
+        if (parentContext.frameCount % 3 == 0) {
+            int snakeHeadI = snake.getNextI();
+            int snakeHeadJ = snake.getNextJ();
 
             if (food.isEaten(snakeHeadI, snakeHeadJ)) {
                 snake.setIncrease();
@@ -70,11 +73,20 @@ public class Board {
                         parentContext.fill(20);
                         break;
                 }
-                parentContext.stroke(20);
-                parentContext.strokeWeight(4);
+                parentContext.strokeWeight(0);
                 parentContext.rect(xStart + j * cellSize, yStart + i * cellSize, cellSize, cellSize);
             }
         }
+
+        int boardPWidth = columns * cellSize;
+        int boardPHeight = rows * cellSize;
+
+        parentContext.stroke(255);
+        parentContext.strokeWeight(2);
+        parentContext.line(xStart, yStart, xStart, yStart + boardPHeight);
+        parentContext.line(xStart, yStart, xStart + boardPWidth, yStart);
+        parentContext.line(xStart + boardPWidth, yStart, xStart + boardPWidth, yStart + boardPHeight);
+        parentContext.line(xStart, yStart + boardPHeight, xStart + boardPWidth, yStart + boardPHeight);
     }
 
     public void keyEvent(KeyEvent event) {

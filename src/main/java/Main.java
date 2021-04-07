@@ -3,19 +3,31 @@ import processing.core.PApplet;
 
 public class Main extends PApplet {
 
+    private static final int CANVAS_WIDTH = 720;
+    private static final int CANVAS_HEIGHT = 644;
+
+    private static final int BOARD_WIDTH = 540;
+    private static final int BOARD_HEIGHT = CANVAS_HEIGHT;
+
+    private static final int BOARD_ROWS = 32;
+    private static final int CELL_SIZE = BOARD_HEIGHT / BOARD_ROWS;
+    private static final int BOARD_COLUMNS = BOARD_WIDTH / CELL_SIZE;
+
     private Board board;
-    private final int cellSize = 40;
 
     public void settings() {
-        size(720, 640);
+        size(CANVAS_WIDTH, CANVAS_HEIGHT);
+
     }
 
     public void setup() {
         background(25);
-        frameRate(60);
+        frameRate(30);
         strokeCap(ROUND);
 
-        board = new Board(this, 0, 0, 16, 16, cellSize);
+        board = new Board(this, 100, 2,
+                BOARD_WIDTH, BOARD_HEIGHT,
+                BOARD_ROWS, BOARD_COLUMNS, CELL_SIZE);
     }
 
     public void draw(){ }
