@@ -2,7 +2,6 @@ package board;
 
 import board.food.Food;
 import board.snake.Snake;
-import observer.Observer;
 import processing.core.PApplet;
 import processing.event.KeyEvent;
 
@@ -106,30 +105,58 @@ public class Board {
 
     public void keyEvent(KeyEvent event) {
         if (event.getAction() == KeyEvent.PRESS) {
-            keyPressed(event.getKeyCode());
+            movePlayerOne(event);
+            movePlayerTwo(event);
         }
     }
 
-    public void keyPressed(int keyCode) {
+    public void movePlayerOne(KeyEvent event) {
+        int keyCode = event.getKeyCode();
+
         final int UP = parentContext.UP;
         final int LEFT = parentContext.LEFT;
         final int RIGHT = parentContext.RIGHT;
         final int BOTTOM = parentContext.DOWN;
 
-        Snake snake = snakeList.get(0);
+        Snake snakeOne = snakeList.get(0);
 
-        if (!snake.haveMoveConsumed()) {
+        if (!snakeOne.haveMoveConsumed()) {
             return;
         }
 
         if (keyCode == UP) {
-            snake.moveUp();
+            snakeOne.moveUp();
         } else if (keyCode == LEFT) {
-            snake.moveLeft();
+            snakeOne.moveLeft();
         } else if (keyCode == RIGHT) {
-            snake.moveRight();
+            snakeOne.moveRight();
         } else if (keyCode == BOTTOM) {
-            snake.moveDown();
+            snakeOne.moveDown();
+        }
+
+    }
+
+    private void movePlayerTwo(KeyEvent event) {
+        char keyCodeChar = event.getKey();
+
+        Snake snakeTwo = snakeList.get(1);
+
+        if (snakeTwo == null) {
+            return;
+        }
+
+        if (!snakeTwo.haveMoveConsumed()) {
+            return;
+        }
+
+        if (keyCodeChar == 'w') {
+            snakeTwo.moveUp();
+        } else if (keyCodeChar == 'a') {
+            snakeTwo.moveLeft();
+        } else if (keyCodeChar == 's') {
+            snakeTwo.moveDown();
+        } else if (keyCodeChar == 'd') {
+            snakeTwo.moveRight();
         }
     }
 
