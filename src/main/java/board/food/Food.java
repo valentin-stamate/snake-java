@@ -59,4 +59,7 @@ public class Food {
         return false;
     }
 
+    public void updateFood() {
+        boardMatrix[i][j] = CellType.FOOD_CELL;
+    }
 }

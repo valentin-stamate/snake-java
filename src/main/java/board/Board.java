@@ -21,10 +21,11 @@ public class Board {
 
     private final int[][] boardMatrix;
 
+    private final int snakeInstances;
     private final List<Snake> snakeList;
-    private final Food food;
+    private final List<Food> foodList;
 
-    public Board(PApplet parent, int xStart, int yStart, int rows, int columns, int cellSize) {
+    public Board(PApplet parent, int xStart, int yStart, int rows, int columns, int cellSize, int snakeInstances) {
         this.parentContext = parent;
         this.xStart = xStart;
         this.yStart = yStart;
@@ -32,13 +33,15 @@ public class Board {
         this.columns = columns;
         this.cellSize = cellSize;
         this.snakeList = new ArrayList<>();
+        this.foodList = new ArrayList<>();
+        this.snakeInstances = snakeInstances;
 
         this.boardMatrix = new int[rows][columns];
 
-        snakeList.add(new Snake(boardMatrix, rows, columns));
-        snakeList.add(new Snake(boardMatrix, rows, columns));
-
-        food = new Food(boardMatrix, rows, columns);
+        for (int i = 0; i < snakeInstances; i++) {
+            snakeList.add(new Snake(boardMatrix, rows, columns));
+            foodList.add(new Food(boardMatrix, rows, columns));
+        }
 
         parentContext.registerMethod("draw", this);
         parentContext.registerMethod("keyEvent", this);
@@ -54,7 +57,11 @@ public class Board {
     public void draw() {
 
         if (parentContext.frameCount % 10 == 0) {
-            for (Snake snake : snakeList) {
+            for (int i = 0; i < snakeList.size(); i++) {
+                Snake snake = snakeList.get(i);
+                Food food = foodList.get(i);
+
+                food.updateFood();
                 if (snake.isFinished()) {
                     continue;
                 }
@@ -67,8 +74,8 @@ public class Board {
                 }
 
                 snake.makeStep();
+                food.updateFood();
             }
-
         }
 
         for (int i = 0; i < rows; i++) {
