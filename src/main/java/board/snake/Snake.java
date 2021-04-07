@@ -20,6 +20,7 @@ public class Snake {
 
     private boolean moveConsumed = true;
     private boolean snakeIncreaseConsumed = true;
+    private boolean snakeFinished = false;
 
     public Snake(int[][] boardMatrix, int rows, int columns) {
         this.boardMatrix = boardMatrix;
@@ -30,11 +31,71 @@ public class Snake {
         initialize();
     }
 
-    public void resetSnake() {
-        initialize();
+    private void initialize() {
+        deleteSnake();
+
+        int i = generateRandom(5, rows - 5);
+        int j = generateRandom(5, columns - 5);
+
+        int startingLength = 2;
+
+        for (int l = 0; l < startingLength; l++) {
+            SnakeCell lastSnakeCell = new SnakeCell(i, j);
+            boardMatrix[lastSnakeCell.getI()][lastSnakeCell.getJ()] = CellType.SNAKE_CELL;
+
+            List<SnakeCell> neighbours = getSnakeCellNeighbours(lastSnakeCell);
+            snakeCells.add(lastSnakeCell);
+
+            SnakeCell randomCell = neighbours.get(generateRandom(0, neighbours.size()));
+
+            snakeCells.add(randomCell);
+
+            if (l == 0) {
+                direction[0] = lastSnakeCell.getI() - randomCell.getI();
+                direction[1] = lastSnakeCell.getJ() - randomCell.getJ();
+            }
+        }
+
+        moveConsumed = true;
+        snakeIncreaseConsumed = true;
     }
 
-    private void initialize() {
+    private List<SnakeCell> getSnakeCellNeighbours(SnakeCell snakeCell) {
+        /* TODO handle snake intersection */
+        List<SnakeCell> neighbours = new ArrayList<>();
+
+        int i = snakeCell.getI();
+        int j = snakeCell.getJ();
+
+        if (i > 0) {
+            if (boardMatrix[i - 1][j] == CellType.EMPTY_CELL) {
+                neighbours.add(new SnakeCell(i - 1, j));
+            }
+        }
+
+        if (j > 0) {
+            if (boardMatrix[i][j - 1] == CellType.EMPTY_CELL) {
+                neighbours.add(new SnakeCell(i, j - 1));
+            }
+        }
+
+        if (i + 1 < rows) {
+            if (boardMatrix[i + 1][j] == CellType.EMPTY_CELL) {
+                neighbours.add(new SnakeCell(i + 1, j));
+            }
+        }
+
+        if (j + 1 < columns) {
+            if (boardMatrix[i][j + 1] == CellType.EMPTY_CELL) {
+                neighbours.add(new SnakeCell(i, j + 1));
+            }
+        }
+
+        return neighbours;
+    }
+
+    public void deleteSnake() {
+        /* TODO handle snake intersection */
         snakeCells.forEach(snakeCell -> {
             int i = snakeCell.getI();
             int j = snakeCell.getJ();
@@ -42,17 +103,10 @@ public class Snake {
         });
 
         snakeCells.clear();
+    }
 
-        this.snakeCells.add(new SnakeCell(1, 5));
-        this.snakeCells.add(new SnakeCell(1, 4));
-        this.snakeCells.add(new SnakeCell(1, 3));
-        this.snakeCells.add(new SnakeCell(1, 2));
-
-        direction[0] = 0;
-        direction[1] = 1;
-
-        moveConsumed = true;
-        snakeIncreaseConsumed = true;
+    public void setSnakeFinished() {
+        snakeFinished = true;
     }
 
     public void onCrashListener(Observer observer) {
@@ -60,6 +114,9 @@ public class Snake {
     }
 
     public void makeStep() {
+        if (snakeFinished) {
+            return;
+        }
 
         int newI = getNextI();
         int newJ = getNextJ();
@@ -162,5 +219,13 @@ public class Snake {
 
     public void setIncrease() {
         snakeIncreaseConsumed = false;
+    }
+
+    private int generateRandom(int start, int end) {
+           return (((int)(Math.random() * 10000)) % (end - start)) + start;
+    }
+
+    public boolean isFinished() {
+        return snakeFinished;
     }
 }

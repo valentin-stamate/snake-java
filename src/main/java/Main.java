@@ -17,7 +17,6 @@ public class Main extends PApplet {
 
     public void settings() {
         size(CANVAS_WIDTH, CANVAS_HEIGHT);
-
     }
 
     public void setup() {
@@ -25,9 +24,7 @@ public class Main extends PApplet {
         frameRate(30);
         strokeCap(ROUND);
 
-        board = new Board(this, 100, 2,
-                BOARD_WIDTH, BOARD_HEIGHT,
-                BOARD_ROWS, BOARD_COLUMNS, CELL_SIZE);
+        board = new Board(this, 100, 2, BOARD_ROWS, BOARD_COLUMNS, CELL_SIZE);
     }
 
     public void draw(){ }

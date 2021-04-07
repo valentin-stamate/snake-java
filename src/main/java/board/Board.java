@@ -2,8 +2,12 @@ package board;
 
 import board.food.Food;
 import board.snake.Snake;
+import observer.Observer;
 import processing.core.PApplet;
 import processing.event.KeyEvent;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class Board {
 
@@ -11,8 +15,6 @@ public class Board {
 
     private final int xStart;
     private final int yStart;
-    private final int boardWidth;
-    private final int boardHeight;
     private final int rows;
     private final int columns;
 
@@ -20,41 +22,54 @@ public class Board {
 
     private final int[][] boardMatrix;
 
-    private final Snake snake;
+    private final List<Snake> snakeList;
     private final Food food;
 
-    public Board(PApplet parent, int xStart, int yStart, int boardWidth, int boardHeight, int rows, int columns, int cellSize) {
+    public Board(PApplet parent, int xStart, int yStart, int rows, int columns, int cellSize) {
         this.parentContext = parent;
         this.xStart = xStart;
         this.yStart = yStart;
         this.rows = rows;
         this.columns = columns;
         this.cellSize = cellSize;
-        this.boardWidth = boardWidth;
-        this.boardHeight = boardHeight;
+        this.snakeList = new ArrayList<>();
 
         this.boardMatrix = new int[rows][columns];
 
-        snake = new Snake(boardMatrix, rows, columns);
+        snakeList.add(new Snake(boardMatrix, rows, columns));
+        snakeList.add(new Snake(boardMatrix, rows, columns));
+
         food = new Food(boardMatrix, rows, columns);
 
         parentContext.registerMethod("draw", this);
         parentContext.registerMethod("keyEvent", this);
 
-        snake.onCrashListener(snake::resetSnake);
+        snakeList.forEach(snake -> {
+            snake.onCrashListener(() -> {
+                snake.deleteSnake();
+                snake.setSnakeFinished();
+            });
+        });
     }
 
     public void draw() {
 
         if (parentContext.frameCount % 3 == 0) {
-            int snakeHeadI = snake.getNextI();
-            int snakeHeadJ = snake.getNextJ();
+            for (Snake snake : snakeList) {
+                if (snake.isFinished()) {
+                    continue;
+                }
 
-            if (food.isEaten(snakeHeadI, snakeHeadJ)) {
-                snake.setIncrease();
+                int snakeHeadI = snake.getNextI();
+                int snakeHeadJ = snake.getNextJ();
+
+                if (food.isEaten(snakeHeadI, snakeHeadJ)) {
+                    snake.setIncrease();
+                }
+
+                snake.makeStep();
             }
 
-            snake.makeStep();
         }
 
         for (int i = 0; i < rows; i++) {
@@ -100,6 +115,8 @@ public class Board {
         final int LEFT = parentContext.LEFT;
         final int RIGHT = parentContext.RIGHT;
         final int BOTTOM = parentContext.DOWN;
+
+        Snake snake = snakeList.get(0);
 
         if (!snake.haveMoveConsumed()) {
             return;
