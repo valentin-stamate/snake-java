@@ -283,18 +283,16 @@ public class Snake {
      * 8 * 3 = 24 input size */
     private void predictNextMove() {
         double[] input = new double[24];
+        Arrays.fill(input, 0.01);
 
-        int snakeI = getHeadI();
-        int snakeJ = getHeadJ();
-
-        getDistancePack(snakeI, snakeJ, 1, 0, input, 0);
-        getDistancePack(snakeI, snakeJ, 1, 1, input, 3);
-        getDistancePack(snakeI, snakeJ, 0, 1, input, 6);
-        getDistancePack(snakeI, snakeJ, -1, 1, input, 9);
-        getDistancePack(snakeI, snakeJ, -1, 0, input, 12);
-        getDistancePack(snakeI, snakeJ, -1, -1, input, 15);
-        getDistancePack(snakeI, snakeJ, 0, -1, input, 18);
-        getDistancePack(snakeI, snakeJ, 1, -1, input, 21);
+        getDistancePack(1, 0, input, 0);
+        getDistancePack(1, 1, input, 3);
+        getDistancePack(0, 1, input, 6);
+        getDistancePack(-1, 1, input, 9);
+        getDistancePack(-1, 0, input, 12);
+        getDistancePack(-1, -1, input, 15);
+        getDistancePack(0, -1, input, 18);
+        getDistancePack(1, -1, input, 21);
 
         System.out.println("Input: " + Arrays.toString(input));
         double[] output = snakeBrain.getOutput(input);
@@ -341,25 +339,28 @@ public class Snake {
         System.out.println("");
     }
 
-    private void getDistancePack(int headI, int headJ, int dirX, int dirY, double[] buffer, int offset) {
+    private void getDistancePack(int dirX, int dirY, double[] buffer, int offset) {
 
         boolean wallDistanceSet = false;
         boolean tailDistanceSet = false;
         boolean foodDistanceSet = false;
 
+        int headI = getHeadI();
+        int headJ = getHeadJ();
+
         for (int i = headI, j = headJ; (i >= 0 && i < rows) && (j >= 0 && j < columns); i += dirY, j += dirX) {
             if (!wallDistanceSet && (i == 0 || j == 0 || i == rows - 1 || j == columns - 1)) {
-                buffer[offset] = distanceBetween(i, j, headI, headJ);
+                buffer[offset] = NeuralNetwork.normalizeOutput(1.0 - distanceBetween(i, j, headI, headJ));
                 wallDistanceSet = true;
             }
 
             if (!tailDistanceSet && checkTailCollision(i, j)) {
-                buffer[offset + 1] = distanceBetween(i, j, headI, headJ);
+                buffer[offset + 1] = NeuralNetwork.normalizeOutput(1.0 - distanceBetween(i, j, headI, headJ));
                 tailDistanceSet = true;
             }
 
             if (!foodDistanceSet && (dirX == 0 || dirY == 0) && foodPosition[0] == i && foodPosition[1] == j) {
-                buffer[offset + 2] = distanceBetween(i, j, headI, headJ);
+                buffer[offset + 2] = NeuralNetwork.normalizeOutput(1.0 - distanceBetween(i, j, headI, headJ));
                 foodDistanceSet = true;
             }
         }

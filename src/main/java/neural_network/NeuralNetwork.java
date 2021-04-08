@@ -53,18 +53,10 @@ public class NeuralNetwork {
         double[] currentInput = Arrays.copyOf(input, input.length);
 
         for (int i = 0; i < layerNumber - 1; i++) {
-            currentInput = getLayerOutput(currentInput, brain[i]);
-            applyActivationFunction(currentInput);
+            currentInput = multiplyMatrices(brain[i], currentInput);
         }
 
         return currentInput;
-    }
-
-    private double[] getLayerOutput(double[] currentInput, double[][] layer) {
-        int n = layer.length;
-        int m = layer[0].length;
-
-        return multiplyMatrices(layer, currentInput);
     }
 
     private double[] multiplyMatrices(double[][] A, double[] B) {
@@ -77,15 +69,15 @@ public class NeuralNetwork {
             for (int j = 0; j < m; j++) {
                 output[i] += A[i][j] * B[j];
             }
+            output[i] = normalizeOutput(output[i]);
+            output[i] = activationFunction(output[i]);
         }
 
         return output;
     }
 
-    private void applyActivationFunction(double[] buffer) {
-        for (int i = 0; i < buffer.length; i++) {
-            buffer[i] = activationFunction(buffer[i]);
-        }
+    public static double normalizeOutput(double value) {
+        return 0.01 + ((0.99 - 0.01) / 1.0) *  value;
     }
 
     /* Sigmoid Function */
