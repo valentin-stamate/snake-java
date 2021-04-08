@@ -21,7 +21,7 @@ public class Food {
         putRandom();
     }
 
-    private void putRandom() {
+    public void putRandom() {
         boardMatrix[i][j] = CellType.EMPTY_CELL;
 
         List<Integer> freeCells = new ArrayList<>();
@@ -51,15 +51,18 @@ public class Food {
     }
 
     public boolean isEaten(int snakeI, int snakeJ) {
-        if (snakeI == i && snakeJ == j) {
-            putRandom();
-            return true;
-        }
-
-        return false;
+        return snakeI == i && snakeJ == j;
     }
 
     public void updateFood() {
         boardMatrix[i][j] = CellType.FOOD_CELL;
+    }
+
+    public int getI() {
+        return i;
+    }
+
+    public int getJ() {
+        return j;
     }
 }

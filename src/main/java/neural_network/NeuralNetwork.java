@@ -45,15 +45,16 @@ public class NeuralNetwork {
         return start + (end - start) * random.nextDouble();
     }
 
-    public double[] getOutput(double[] input) throws Exception {
+    public double[] getOutput(double[] input) {
         if (input.length != layerDimension[0]) {
-            throw new Exception("Input should match input dimension");
+            return null;
         }
 
         double[] currentInput = Arrays.copyOf(input, input.length);
 
         for (int i = 0; i < layerNumber - 1; i++) {
             currentInput = getLayerOutput(currentInput, brain[i]);
+            applyActivationFunction(currentInput);
         }
 
         return currentInput;
@@ -80,5 +81,17 @@ public class NeuralNetwork {
 
         return output;
     }
+
+    private void applyActivationFunction(double[] buffer) {
+        for (int i = 0; i < buffer.length; i++) {
+            buffer[i] = activationFunction(buffer[i]);
+        }
+    }
+
+    /* Sigmoid Function */
+    private double activationFunction(double value) {
+        return 1.0D / (1 + Math.pow(Math.E, -value));
+    }
+
 
 }

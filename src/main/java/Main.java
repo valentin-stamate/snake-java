@@ -24,7 +24,7 @@ public class Main extends PApplet {
         frameRate(30);
         strokeCap(ROUND);
 
-        board = new Board(this, 100, 2, BOARD_ROWS, BOARD_COLUMNS, CELL_SIZE, 2);
+        board = new Board(this, 100, 2, BOARD_ROWS, BOARD_COLUMNS, CELL_SIZE, 1);
     }
 
     public void draw(){ }

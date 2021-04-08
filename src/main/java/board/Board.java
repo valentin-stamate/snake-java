@@ -39,7 +39,7 @@ public class Board {
         this.boardMatrix = new int[rows][columns];
 
         for (int i = 0; i < snakeInstances; i++) {
-            snakeList.add(new Snake(boardMatrix, rows, columns));
+            snakeList.add(new Snake(boardMatrix, rows, columns, cellSize * columns, cellSize * rows));
             foodList.add(new Food(boardMatrix, rows, columns));
         }
 
@@ -70,9 +70,11 @@ public class Board {
                 int snakeHeadJ = snake.getNextJ();
 
                 if (food.isEaten(snakeHeadI, snakeHeadJ)) {
+                    food.putRandom();
                     snake.setIncrease();
                 }
 
+                snake.setFoodPosition(food.getI(), food.getJ());
                 snake.makeStep();
                 food.updateFood();
             }

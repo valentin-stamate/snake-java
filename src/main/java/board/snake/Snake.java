@@ -1,9 +1,11 @@
 package board.snake;
 
 import board.CellType;
+import neural_network.NeuralNetwork;
 import observer.Observer;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 
@@ -19,14 +21,20 @@ public class Snake {
     private final int[][] boardMatrix;
     private final int rows;
     private final int columns;
+    private final int width;
+    private final int height;
 
     private boolean moveConsumed = true;
     private boolean snakeIncreaseConsumed = true;
     private boolean snakeFinished = false;
 
+    private final int[] foodPosition;
+
     private int score;
 
-    public Snake(int[][] boardMatrix, int rows, int columns) {
+    private final NeuralNetwork snakeBrain;
+
+    public Snake(int[][] boardMatrix, int rows, int columns, int width, int height) {
         this.boardMatrix = boardMatrix;
         this.rows = rows;
         this.columns = columns;
@@ -34,6 +42,10 @@ public class Snake {
         this.snakeCellsHashSet = new HashSet<>();
         this.snakeCollisionObserverList = new ArrayList<>();
         this.score = 0;
+        this.foodPosition = new int[2];
+        this.snakeBrain = new NeuralNetwork(new int[]{24, 16, 16, 4});
+        this.width = width;
+        this.height = height;
         initialize();
     }
 
@@ -102,6 +114,11 @@ public class Snake {
         return neighbours;
     }
 
+    public void setFoodPosition(int i, int j) {
+        foodPosition[0] = i;
+        foodPosition[1] = j;
+    }
+
     public void deleteSnake() {
         /* TODO handle snake intersection */
         snakeCells.forEach(snakeCell -> {
@@ -134,7 +151,7 @@ public class Snake {
             return;
         }
 
-        if (snakeCellsHashSet.contains(new SnakeCell(newI, newJ))) {
+        if (checkTailCollision(newI, newJ)) {
             onSnakeCollide();
             return;
         }
@@ -165,6 +182,9 @@ public class Snake {
 
         moveConsumed = true;
         updateSnakeTail();
+
+        /* Neural Network Prediction */
+        predictNextMove();
     }
 
     private void updateSnakeTail() {
@@ -254,4 +274,110 @@ public class Snake {
     public boolean isFinished() {
         return snakeFinished;
     }
+
+    /* Neural Network */
+    /** 8 directions and each one sees the distance between:
+     * 1. wall
+     * 2. tail
+     * 3. food
+     * 8 * 3 = 24 input size */
+    private void predictNextMove() {
+        double[] input = new double[24];
+
+        int snakeI = getHeadI();
+        int snakeJ = getHeadJ();
+
+        getDistancePack(snakeI, snakeJ, 1, 0, input, 0);
+        getDistancePack(snakeI, snakeJ, 1, 1, input, 3);
+        getDistancePack(snakeI, snakeJ, 0, 1, input, 6);
+        getDistancePack(snakeI, snakeJ, -1, 1, input, 9);
+        getDistancePack(snakeI, snakeJ, -1, 0, input, 12);
+        getDistancePack(snakeI, snakeJ, -1, -1, input, 15);
+        getDistancePack(snakeI, snakeJ, 0, -1, input, 18);
+        getDistancePack(snakeI, snakeJ, 1, -1, input, 21);
+
+        System.out.println("Input: " + Arrays.toString(input));
+        double[] output = snakeBrain.getOutput(input);
+
+        if (output != null) {
+            makeMoveFromOutput(output);
+        } else {
+            System.out.println("Output is null");
+        }
+
+    }
+
+    private void makeMoveFromOutput(double[] output) {
+        int n = output.length;
+
+        int iMax = -1;
+        double maxOutput = 0;
+
+        for (int i = 0; i < n; i++) {
+            if (output[i] > maxOutput) {
+                iMax = i;
+                maxOutput = output[i];
+            }
+        }
+
+        System.out.println("Output: " + Arrays.toString(output));
+
+        if (maxOutput > 0.6D) {
+            System.out.println("Moving " + iMax);
+            if (iMax == 0) {
+                moveUp();
+                System.out.println("UP");
+            } else if (iMax == 1) {
+                moveRight();
+                System.out.println("Right");
+            } else if (iMax == 2) {
+                moveDown();
+                System.out.println("Down");
+            } else if (iMax == 3) {
+                moveLeft();
+                System.out.println("Left");
+            }
+        }
+        System.out.println("");
+    }
+
+    private void getDistancePack(int headI, int headJ, int dirX, int dirY, double[] buffer, int offset) {
+
+        boolean wallDistanceSet = false;
+        boolean tailDistanceSet = false;
+        boolean foodDistanceSet = false;
+
+        for (int i = headI, j = headJ; (i >= 0 && i < rows) && (j >= 0 && j < columns); i += dirY, j += dirX) {
+            if (!wallDistanceSet && (i == 0 || j == 0 || i == rows - 1 || j == columns - 1)) {
+                buffer[offset] = distanceBetween(i, j, headI, headJ);
+                wallDistanceSet = true;
+            }
+
+            if (!tailDistanceSet && checkTailCollision(i, j)) {
+                buffer[offset + 1] = distanceBetween(i, j, headI, headJ);
+                tailDistanceSet = true;
+            }
+
+            if (!foodDistanceSet && (dirX == 0 || dirY == 0) && foodPosition[0] == i && foodPosition[1] == j) {
+                buffer[offset + 2] = distanceBetween(i, j, headI, headJ);
+                foodDistanceSet = true;
+            }
+        }
+    }
+
+    private double distanceBetween(double aX, double aY, double bX, double bY) {
+        double distanceX = Math.abs(aX - bX);
+        double distanceY = Math.abs(aY - bY);
+
+        /* Normalizing the distance to be between 0 - 1 */
+        distanceX /= (1.0 * height);
+        distanceY /= (1.0 * width);
+
+        return Math.sqrt(distanceX * distanceX + distanceY * distanceY);
+    }
+
+    private boolean checkTailCollision(int headI, int headJ) {
+        return snakeCellsHashSet.contains(new SnakeCell(headI, headJ));
+    }
+
 }
