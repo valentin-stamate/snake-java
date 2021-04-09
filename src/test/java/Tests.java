@@ -1,3 +1,4 @@
+import genetic_algorithm.GeneticAlgorithm;
 import neural_network.NeuralNetwork;
 import org.junit.jupiter.api.Test;
 
@@ -7,8 +8,16 @@ public class Tests {
 
     @Test
     public void test() throws Exception {
-        NeuralNetwork neuralNetwork = new NeuralNetwork(new int[]{3, 8, 6, 4});
+        double[] value = new double[]{0.46546, 0.64, 3, 0.2398543};
+        GeneticAlgorithm geneticAlgorithm = new GeneticAlgorithm(0.0, 1.0, value.length);
 
-        System.out.println(Arrays.toString(neuralNetwork.getOutput(new double[]{0.5, 0.1, -0.3})));
+        System.out.println(Arrays.toString(value));
+
+        boolean[] chromosome = geneticAlgorithm.toChromosome(value);
+
+        double[] value_1 = geneticAlgorithm.toPoint(chromosome);
+
+        System.out.println(Arrays.toString(value_1));
+
     }
 }
