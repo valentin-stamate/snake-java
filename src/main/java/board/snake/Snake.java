@@ -1,15 +1,13 @@
 package board.snake;
 
 import board.CellType;
+import genetic_algorithm.GeneticAlgorithmMember;
 import neural_network.NeuralNetwork;
 import observer.Observer;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 
-public class Snake {
+public class Snake implements GeneticAlgorithmMember<Snake> {
 
     private final List<Observer> snakeCollisionObserverList;
 
@@ -32,7 +30,24 @@ public class Snake {
 
     private int score;
 
+    /* Neural Network */
     private final NeuralNetwork snakeBrain;
+
+    /* Genetic Algorithm */
+    private final boolean chromosome[];
+    private final double vector[];
+
+    private final double intervalStart;
+    private final double intervalEnd;
+    private static int PRECISION = 5;
+
+    private final int vectorLength;
+    private final int pointLength;
+    private final int chromosomeLength;
+    private final double intervalLength;
+    private final int maximumBitValue;
+
+    private final double mutationRate = 0.01;
 
     public Snake(int[][] boardMatrix, int rows, int columns, int width, int height) {
         this.boardMatrix = boardMatrix;
@@ -43,9 +58,26 @@ public class Snake {
         this.snakeCollisionObserverList = new ArrayList<>();
         this.score = 0;
         this.foodPosition = new int[2];
-        this.snakeBrain = new NeuralNetwork(new int[]{24, 16, 16, 4});
         this.width = width;
         this.height = height;
+
+        this.snakeBrain = new NeuralNetwork(new int[]{24, 16, 4});
+        this.vectorLength = snakeBrain.vectorSize();
+
+        this.pointLength = (int)Math.ceil(Math.log(Math.pow(10, PRECISION)));
+        this.chromosomeLength = vectorLength * pointLength;
+        this.chromosome = new boolean[chromosomeLength];
+
+        this.vector = new double[vectorLength];
+        this.snakeBrain.toVector(vector);
+        toChromosome(vector);
+
+        this.intervalStart = 0.0;
+        this.intervalEnd = 1.0;
+        this.intervalLength = intervalEnd - intervalStart;
+        this.maximumBitValue = (int)Math.pow(2, pointLength) - 1;
+
+
         initialize();
     }
 
@@ -379,6 +411,147 @@ public class Snake {
 
     private boolean checkTailCollision(int headI, int headJ) {
         return snakeCellsHashSet.contains(new SnakeCell(headI, headJ));
+    }
+
+    @Override
+    public double fitness() {
+        return score();
+    }
+
+    @Override
+    public double score() {
+        return score;
+    }
+
+    @Override
+    public int compare(GeneticAlgorithmMember memberA, GeneticAlgorithmMember memberB) {
+        double difference = memberB.fitness() - memberA.fitness();
+        if (difference < 0) {
+            return -1;
+        }
+
+        if (difference > 0) {
+            return 1;
+        }
+
+        return 0;
+    }
+
+    /* Point to chromosome and vice versa */
+    private void toPoint(boolean[] chromosome, double buffer[]) {
+
+        for (int i = 0; i < vectorLength; i++) {
+            buffer[i] = chromosomeToPoint(i, chromosome);
+        }
+
+    }
+
+    private boolean[] toChromosome(double[] X) {
+        boolean[] chromosome = new boolean[chromosomeLength];
+
+        for (int i = 0; i < vectorLength; i++) {
+            pointToBitmap(i, X[i], chromosome);
+        }
+
+        return chromosome;
+    }
+
+    private double chromosomeToPoint(int position, boolean[] chromosome) {
+        int bitPointValue = 0;
+
+        int pStart = pointLength * position;
+        int pEnd = pointLength * (position + 1) - 1;
+
+        for (int i = pStart; i <= pEnd; i++) {
+            bitPointValue = bitPointValue * 2 + (chromosome[i] ? 1 : 0);
+        }
+
+        return intervalStart + (1.0 * bitPointValue) * (intervalLength / maximumBitValue);
+    }
+
+    private void pointToBitmap(int position, double value, boolean[] chromosome) {
+
+        int pStart = pointLength * position;
+        int pEnd = pointLength * (position + 1) - 1;
+
+        int valueToCode = (int)(((value - intervalStart) * maximumBitValue) / intervalLength);
+
+        for (int i = pEnd; i >= pStart; i--) {
+            chromosome[i] = (valueToCode % 2 == 1);
+            valueToCode /= 2;
+        }
+    }
+
+    private void updateBrain() {
+        toPoint(chromosome, vector);
+        snakeBrain.update(vector);
+    }
+
+    private void updateChromosome(boolean[] newChromosome) {
+        for (int i = 0; i < chromosome.length; i++) {
+            chromosome[i] = newChromosome[i];
+        }
+
+        updateBrain();
+    }
+
+    @Override
+    public void mutate() {
+        for (int i = 0; i < chromosome.length; i++) {
+            double r = generateRandom(0.0, 1.0);
+
+            if (r < mutationRate) {
+                chromosome[i] = !chromosome[i];
+            }
+        }
+
+        updateBrain();
+    }
+
+    @Override
+    public void evaluate() {
+        this.score = score;
+    }
+
+    @Override
+    public List<Snake> makeOffspring(Snake snake) {
+        List<Snake> offspring = new ArrayList<>(2);
+
+        boolean[] chromosomeA = this.chromosome;
+        boolean[] chromosomeB = snake.chromosome;
+
+        int n = chromosome.length;
+
+        int randomPivot = generateRandom(1, n - 1);
+
+        boolean[] offspringChromosomeA = new boolean[n];
+        boolean[] offspringChromosomeB = new boolean[n];
+
+        for (int i = 0; i < n; i++) {
+            if (i <= randomPivot) {
+                offspringChromosomeA[i] = chromosomeA[i];
+                offspringChromosomeB[i] = chromosomeB[i];
+                continue;
+            }
+            offspringChromosomeA[i] = chromosomeB[i];
+            offspringChromosomeB[i] = chromosomeA[i];
+        }
+
+        Snake snake1 = new Snake(boardMatrix, rows, columns, width, height);
+        Snake snake2 = new Snake(boardMatrix, rows, columns, width, height);
+
+        offspring.add(snake1);
+        offspring.add(snake2);
+
+        snake1.updateChromosome(offspringChromosomeA);
+        snake2.updateChromosome(offspringChromosomeB);
+
+        return offspring;
+    }
+
+    private double generateRandom(double start, double end) {
+        Random random = new Random();
+        return start + (end - start) * random.nextDouble();
     }
 
 }

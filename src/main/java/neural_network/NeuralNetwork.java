@@ -7,12 +7,19 @@ public class NeuralNetwork {
 
     private final int[] layerDimension;
     private final int layerNumber;
+    private final int vectorSize;
 
     double[][][] brain;
 
     public NeuralNetwork(int[] layerDimension) {
         this.layerDimension = layerDimension;
         this.layerNumber = layerDimension.length;
+
+        int vectorSize = 1;
+        for (int i = 0; i < layerDimension.length - 1; i++) {
+            vectorSize += layerDimension[i] * layerDimension[i + 1];
+        }
+        this.vectorSize = vectorSize;
 
         initializeNeuralNetwork();
     }
@@ -76,6 +83,10 @@ public class NeuralNetwork {
         return output;
     }
 
+    public int vectorSize() {
+        return vectorSize;
+    }
+
     public static double normalizeOutput(double value) {
         return 0.01 + ((0.99 - 0.01) / 1.0) *  value;
     }
@@ -85,5 +96,38 @@ public class NeuralNetwork {
         return 1.0D / (1 + Math.pow(Math.E, -value));
     }
 
+    public void toVector(double[] buffer) {
 
+        int offset = 0;
+        for (int l = 0; l < layerDimension.length - 1; l++) {
+            double[][] layer = brain[l];
+            int n = layer.length;
+            int m = layer[0].length;
+
+            for (int i = 0; i < n; i++) {
+                for (int j = 0; j < m; j++) {
+                    buffer[offset + i * m + j] = layer[i][j];
+                }
+            }
+
+            offset += n * m;
+        }
+    }
+
+    public void update(double[] vector) {
+
+        int offset = 0;
+        for (int l = 0; l < layerDimension.length - 1; l++) {
+            double[][] layer = brain[l];
+            int n = layer.length;
+            int m = layer[0].length;
+
+            for (int i = 0; i < n; i++) {
+                for (int j = 0; j < m; j++) {
+                    layer[i][j] = vector[offset + i * m + j];
+                }
+            }
+            offset += n * m;
+        }
+    }
 }
