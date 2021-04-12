@@ -15,6 +15,8 @@ public class Main extends PApplet {
 
     private Board board;
 
+    private int gameType = 0;
+
     public void settings() {
         size(CANVAS_WIDTH, CANVAS_HEIGHT);
     }
@@ -24,7 +26,7 @@ public class Main extends PApplet {
         frameRate(30);
         strokeCap(ROUND);
 
-        board = new Board(this, 100, 2, BOARD_ROWS, BOARD_COLUMNS, CELL_SIZE, 1);
+        board = new Board(this, 100, 2, BOARD_ROWS, BOARD_COLUMNS, CELL_SIZE, 1, gameType);
     }
 
     public void draw(){ }

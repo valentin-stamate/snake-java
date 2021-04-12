@@ -7,7 +7,6 @@ import processing.core.PApplet;
 import processing.event.KeyEvent;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class Board {
@@ -25,11 +24,12 @@ public class Board {
 
     private final int snakeInstances;
     private final List<Snake> snakeList;
-    private final List<Food> foodList;
 
     private final GeneticAlgorithm<Snake> geneticAlgorithm;
 
-    public Board(PApplet parent, int xStart, int yStart, int rows, int columns, int cellSize, int snakeInstances) {
+    private final int gameType;
+
+    public Board(PApplet parent, int xStart, int yStart, int rows, int columns, int cellSize, int snakeInstances, int gameType) {
         this.parentContext = parent;
         this.xStart = xStart;
         this.yStart = yStart;
@@ -37,14 +37,13 @@ public class Board {
         this.columns = columns;
         this.cellSize = cellSize;
         this.snakeList = new ArrayList<>();
-        this.foodList = new ArrayList<>();
         this.snakeInstances = snakeInstances;
+        this.gameType = gameType;
 
         this.boardMatrix = new int[rows][columns];
 
         for (int i = 0; i < snakeInstances; i++) {
             snakeList.add(new Snake(boardMatrix, rows, columns, cellSize * columns, cellSize * rows));
-            foodList.add(new Food(boardMatrix, rows, columns));
         }
 
         parentContext.registerMethod("draw", this);
@@ -55,34 +54,55 @@ public class Board {
 
     public void draw() {
 
-        if (parentContext.frameCount % 2 == 0) {
+        clearBoard();
 
-            for (int i = 0; i < snakeList.size(); i++) {
-                Snake snake = snakeList.get(i);
-                Food food = foodList.get(i);
+        drawSnakes();
 
-                food.updateFood();
-                if (snake.isFinished()) {
-                    food.hide();
-                    continue;
-                }
+        drawBoard();
 
-                int snakeHeadI = snake.getNextI();
-                int snakeHeadJ = snake.getNextJ();
 
-                if (food.isEaten(snakeHeadI, snakeHeadJ)) {
-                    food.putRandom();
-                    snake.setIncrease();
-                }
+//        boolean allSnakesDead = true;
+//        for (Snake snake : snakeList) {
+//            if (!snake.isFinished()) {
+//                allSnakesDead = false;
+//                break;
+//            }
+//        }
+//
+//        if (allSnakesDead) {
+//            geneticAlgorithm.loopGeneration();
+//            System.out.println("Generation " + geneticAlgorithm.getGeneration());
+//            System.out.println(snakeList.size());
+//
+//            clearBoard();
+//            reinitializeSnakes();
+//        }
 
-                snake.setFoodPosition(food.getI(), food.getJ());
-                snake.makeStep();
-                food.updateFood();
-            }
-        }
+    }
 
+    private void clearBoard() {
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < columns; j++) {
+                boardMatrix[i][j] = CellType.EMPTY_CELL;
+            }
+        }
+    }
+
+    void drawSnakes() {
+        for (Snake snake : snakeList) {
+            if (parentContext.frameCount % 2 == 0) {
+                snake.makeStep();
+            }
+            snake.drawSnake();
+        }
+    }
+
+    void drawBoard() {
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < columns; j++) {
+                parentContext.strokeWeight(1.5f);
+                parentContext.stroke(20);
+
                 switch (boardMatrix[i][j]) {
                     case CellType.SNAKE_HEAD_CELL:
                         parentContext.fill(175);
@@ -95,9 +115,10 @@ public class Board {
                         break;
                     default:
                         parentContext.fill(20);
+                        parentContext.stroke(255);
+                        parentContext.strokeWeight(0);
                         break;
                 }
-                parentContext.strokeWeight(0);
                 parentContext.rect(xStart + j * cellSize, yStart + i * cellSize, cellSize, cellSize);
             }
         }
@@ -111,33 +132,6 @@ public class Board {
         parentContext.line(xStart, yStart, xStart + boardPWidth, yStart);
         parentContext.line(xStart + boardPWidth, yStart, xStart + boardPWidth, yStart + boardPHeight);
         parentContext.line(xStart, yStart + boardPHeight, xStart + boardPWidth, yStart + boardPHeight);
-
-
-        boolean allSnakesDead = true;
-        for (Snake snake : snakeList) {
-            if (!snake.isFinished()) {
-                allSnakesDead = false;
-                break;
-            }
-        }
-
-        if (allSnakesDead) {
-            geneticAlgorithm.loopGeneration();
-            System.out.println("Generation " + geneticAlgorithm.getGeneration());
-            System.out.println(snakeList.size());
-
-            clearBoard();
-            reinitializeSnakes();
-        }
-
-    }
-
-    private void clearBoard() {
-        for (int i = 0; i < rows; i++) {
-            for (int j = 0; j < columns; j++) {
-                boardMatrix[i][j] = CellType.EMPTY_CELL;
-            }
-        }
     }
 
     private void reinitializeSnakes() {
@@ -149,7 +143,7 @@ public class Board {
     public void keyEvent(KeyEvent event) {
         if (event.getAction() == KeyEvent.PRESS) {
             movePlayerOne(event);
-            movePlayerTwo(event);
+//            movePlayerTwo(event);
         }
     }
 
@@ -162,10 +156,6 @@ public class Board {
         final int BOTTOM = parentContext.DOWN;
 
         Snake snakeOne = snakeList.get(0);
-
-        if (!snakeOne.haveMoveConsumed()) {
-            return;
-        }
 
         if (keyCode == UP) {
             snakeOne.moveUp();
@@ -185,10 +175,6 @@ public class Board {
         Snake snakeTwo = snakeList.get(1);
 
         if (snakeTwo == null) {
-            return;
-        }
-
-        if (!snakeTwo.haveMoveConsumed()) {
             return;
         }
 
