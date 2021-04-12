@@ -84,6 +84,7 @@ public class Snake implements GeneticAlgorithmMember<Snake> {
 
     public void initialize() {
         snakeCells.clear();
+        snakeCellsHashSet.clear();
 
         direction[0] = generateRandom(-1, 2);
         direction[1] = 0;
@@ -155,8 +156,6 @@ public class Snake implements GeneticAlgorithmMember<Snake> {
 
         canChangeDirection = true;
 
-        /* Neural Network Prediction */
-//        predictNextMove();
     }
 
     private void onSnakeCollide() {
@@ -282,7 +281,7 @@ public class Snake implements GeneticAlgorithmMember<Snake> {
      * 2. tail
      * 3. food
      * 8 * 3 = 24 input size */
-    private void predictNextMove() {
+    public void predictNextMove() {
         double[] input = new double[24];
         Arrays.fill(input, 0.01);
 
@@ -342,17 +341,17 @@ public class Snake implements GeneticAlgorithmMember<Snake> {
 
         for (int i = headI, j = headJ; (i >= 0 && i < rows) && (j >= 0 && j < columns); i += dirY, j += dirX) {
             if (!wallDistanceSet && (i == 0 || j == 0 || i == rows - 1 || j == columns - 1)) {
-                buffer[offset] = NeuralNetwork.normalizeOutput(1.0 - distanceBetween(i, j, headI, headJ));
+                buffer[offset] = NeuralNetwork.normalizeOutput(distanceBetween(i, j, headI, headJ));
                 wallDistanceSet = true;
             }
 
             if (!tailDistanceSet && checkTailCollision(i, j)) {
-                buffer[offset + 1] = NeuralNetwork.normalizeOutput(1.0 - distanceBetween(i, j, headI, headJ));
+                buffer[offset + 1] = NeuralNetwork.normalizeOutput(distanceBetween(i, j, headI, headJ));
                 tailDistanceSet = true;
             }
 
             if (!foodDistanceSet && (dirX == 0 || dirY == 0) && foodPosition[0] == i && foodPosition[1] == j) {
-                buffer[offset + 2] = NeuralNetwork.normalizeOutput(1.0 - distanceBetween(i, j, headI, headJ));
+                buffer[offset + 2] = NeuralNetwork.normalizeOutput(distanceBetween(i, j, headI, headJ));
                 foodDistanceSet = true;
             }
         }
@@ -496,7 +495,6 @@ public class Snake implements GeneticAlgorithmMember<Snake> {
         return start + (end - start) * random.nextDouble();
     }
 
-
     @Override
     public int compareTo(Snake snake) {
         double difference = this.fitness() - snake.fitness();
@@ -511,7 +509,4 @@ public class Snake implements GeneticAlgorithmMember<Snake> {
         return 0;
     }
 
-    public int[] getDirection() {
-        return direction;
-    }
 }

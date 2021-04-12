@@ -27,7 +27,7 @@ public class Main extends PApplet {
         frameRate(30);
         strokeCap(ROUND);
 
-        board = new Board(this, 100, 2, BOARD_ROWS, BOARD_COLUMNS, CELL_SIZE, 1, GameType.SNAKE_AI);
+        board = new Board(this, 100, 2, BOARD_ROWS, BOARD_COLUMNS, CELL_SIZE, GameType.SNAKE_AI);
     }
 
     public void draw(){ }

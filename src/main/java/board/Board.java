@@ -1,6 +1,5 @@
 package board;
 
-import board.food.Food;
 import board.snake.Snake;
 import genetic_algorithm.GeneticAlgorithm;
 import processing.core.PApplet;
@@ -28,7 +27,7 @@ public class Board {
 
     private final int gameType;
 
-    public Board(PApplet parent, int xStart, int yStart, int rows, int columns, int cellSize, int snakeInstances, int gameType) {
+    public Board(PApplet parent, int xStart, int yStart, int rows, int columns, int cellSize, int gameType) {
         this.parentContext = parent;
         this.xStart = xStart;
         this.yStart = yStart;
@@ -49,7 +48,7 @@ public class Board {
                 addSnake();
                 break;
             case GameType.SNAKE_AI:
-                for (int i = 0; i < snakeInstances; i++) {
+                for (int i = 0; i < GeneticAlgorithm.POPULATION_SIZE; i++) {
                     addSnake();
                 }
                 this.geneticAlgorithm = new GeneticAlgorithm<>(snakeList);
@@ -70,26 +69,42 @@ public class Board {
 
         drawSnakes();
 
+        if (parentContext.frameCount % 1 == 0) {
+            makeSnakeStep();
+
+            if (gameType == GameType.SNAKE_AI) {
+                checkPopulation();
+            }
+
+            predictSnakesMovement();
+        }
+
         drawBoard();
 
 
-//        boolean allSnakesDead = true;
-//        for (Snake snake : snakeList) {
-//            if (!snake.isFinished()) {
-//                allSnakesDead = false;
-//                break;
-//            }
-//        }
-//
-//        if (allSnakesDead) {
-//            geneticAlgorithm.loopGeneration();
-//            System.out.println("Generation " + geneticAlgorithm.getGeneration());
-//            System.out.println(snakeList.size());
-//
-//            clearBoard();
-//            reinitializeSnakes();
-//        }
+    }
 
+    private void predictSnakesMovement() {
+        for (Snake snake : snakeList) {
+            snake.predictNextMove();
+        }
+    }
+
+    private void checkPopulation() {
+        boolean allSnakesDead = true;
+        for (Snake snake : snakeList) {
+            if (!snake.isFinished()) {
+                allSnakesDead = false;
+                break;
+            }
+        }
+
+        if (allSnakesDead) {
+            geneticAlgorithm.nextGeneration();
+            System.out.println("Generation " + geneticAlgorithm.getGeneration());
+
+            reinitializeSnakes();
+        }
     }
 
     private void clearBoard() {
@@ -102,10 +117,13 @@ public class Board {
 
     void drawSnakes() {
         for (Snake snake : snakeList) {
-            if (parentContext.frameCount % 2 == 0) {
-                snake.makeStep();
-            }
             snake.drawSnake();
+        }
+    }
+
+    void makeSnakeStep() {
+        for (Snake snake : snakeList) {
+            snake.makeStep();
         }
     }
 

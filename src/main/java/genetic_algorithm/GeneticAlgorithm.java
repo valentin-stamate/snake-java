@@ -3,23 +3,23 @@ package genetic_algorithm;
 import java.util.*;
 
 public class GeneticAlgorithm<M extends GeneticAlgorithmMember<M>> {
-    private static final double MUTATION_RATE = 0.02;
-    private static final int MAX_GENERATIONS = 1000;
-    private static  final double CROSSOVER_PROBABILITY = 0.2;
+    public static  final double CROSSOVER_PROBABILITY = 0.2;
+    public final static int POPULATION_SIZE = 100;
 
     private final List<M> population;
-    private final int populationSize;
 
     private int generationNumber = 0;
 
     public GeneticAlgorithm(List<M> population) {
+        if (population.size() != POPULATION_SIZE) {
+            System.out.println("Ups, population size doesn't match");
+        }
         this.population = population;
-        this.populationSize = population.size();
         evaluate();
     }
 
 
-    public void loopGeneration() {
+    public void nextGeneration() {
         generationNumber++;
         mutate();
         crossover();
@@ -34,11 +34,9 @@ public class GeneticAlgorithm<M extends GeneticAlgorithmMember<M>> {
     }
 
     private void crossover() {
-        int n = population.size();
-
         List<M> crossoverPopulation = new ArrayList<>();
 
-        for (int i = 0; i < n; i++) {
+        for (int i = 0; i < POPULATION_SIZE; i++) {
             double r = generateRandom(0.0, 1.0);
 
             if (r < CROSSOVER_PROBABILITY) {
@@ -63,7 +61,7 @@ public class GeneticAlgorithm<M extends GeneticAlgorithmMember<M>> {
     private void select() {
         Collections.sort(population);
 
-        int membersToRemove = population.size() - populationSize;
+        int membersToRemove = population.size() - POPULATION_SIZE;
 
         for (int i = 0; i < membersToRemove; i++) {
             population.remove(population.size() - 1);
