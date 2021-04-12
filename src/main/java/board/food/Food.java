@@ -65,4 +65,8 @@ public class Food {
     public int getJ() {
         return j;
     }
+
+    public void hide() {
+        boardMatrix[i][j] = CellType.EMPTY_CELL;
+    }
 }

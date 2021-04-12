@@ -3,7 +3,7 @@ package genetic_algorithm;
 import java.util.Comparator;
 import java.util.List;
 
-public interface GeneticAlgorithmMember<T> extends Comparator<GeneticAlgorithmMember<T>> {
+public interface GeneticAlgorithmMember<T> extends Comparable<T> {
     double fitness();
     double score();
     void mutate();

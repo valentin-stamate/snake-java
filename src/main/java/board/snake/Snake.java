@@ -47,6 +47,8 @@ public class Snake implements GeneticAlgorithmMember<Snake> {
     private final double intervalLength;
     private final int maximumBitValue;
 
+    private String deathCause = "";
+
     private final double mutationRate = 0.01;
 
     public Snake(int[][] boardMatrix, int rows, int columns, int width, int height) {
@@ -81,9 +83,24 @@ public class Snake implements GeneticAlgorithmMember<Snake> {
         initialize();
     }
 
-    private void initialize() {
+    public void initialize() {
+        direction[0] = generateRandom(-1, 2);
+        direction[1] = 0;
+        if (direction[0] == 0) {
+            direction[1] = generateRandom(-1, 2);
+        }
+        System.out.println(Arrays.toString(direction));
         deleteSnake();
 
+        centerSnakePosition();
+
+        moveConsumed = true;
+        snakeIncreaseConsumed = true;
+        snakeFinished = false;
+        score = 0;
+    }
+
+    private void randomSnakePosition() {
         int i = generateRandom(5, rows - 5);
         int j = generateRandom(5, columns - 5);
 
@@ -97,7 +114,12 @@ public class Snake implements GeneticAlgorithmMember<Snake> {
             snakeCells.add(lastSnakeCell);
             snakeCellsHashSet.add(lastSnakeCell);
 
-            SnakeCell randomCell = neighbours.get(generateRandom(0, neighbours.size()));
+            SnakeCell randomCell = null;
+            if (neighbours.size() == 0) {
+                break;
+            }
+            randomCell = neighbours.get(generateRandom(0, neighbours.size()));
+
 
             i = randomCell.getI();
             j = randomCell.getJ();
@@ -107,13 +129,23 @@ public class Snake implements GeneticAlgorithmMember<Snake> {
                 direction[1] = lastSnakeCell.getJ() - randomCell.getJ();
             }
         }
+    }
 
-        moveConsumed = true;
-        snakeIncreaseConsumed = true;
+    private void centerSnakePosition() {
+        int currentI = rows / 2;
+        int currentJ = columns / 2;
+
+        int startingLength = 4;
+
+        for (int i = 0; i < startingLength; i++) {
+            snakeCells.add(new SnakeCell(currentI, currentJ));
+            currentI -= direction[0];
+            currentJ -= direction[1];
+        }
+
     }
 
     private List<SnakeCell> getSnakeCellNeighbours(SnakeCell snakeCell) {
-        /* TODO handle snake intersection */
         List<SnakeCell> neighbours = new ArrayList<>();
 
         int i = snakeCell.getI();
@@ -152,14 +184,11 @@ public class Snake implements GeneticAlgorithmMember<Snake> {
     }
 
     public void deleteSnake() {
-        /* TODO handle snake intersection */
-        snakeCells.forEach(snakeCell -> {
-            int i = snakeCell.getI();
-            int j = snakeCell.getJ();
-            boardMatrix[i][j] = CellType.EMPTY_CELL;
-        });
-
         snakeCells.clear();
+    }
+
+    public String getDeathCause() {
+        return deathCause;
     }
 
     public void setSnakeFinished() {
@@ -179,11 +208,13 @@ public class Snake implements GeneticAlgorithmMember<Snake> {
         int newJ = getNextJ();
 
         if (newI >= rows || newJ >= columns || newI < 0 || newJ < 0) {
+            deathCause = "Snake wall collision";
             onSnakeCollide();
             return;
         }
 
         if (checkTailCollision(newI, newJ)) {
+            deathCause = "Snake tail collision";
             onSnakeCollide();
             return;
         }
@@ -227,6 +258,8 @@ public class Snake implements GeneticAlgorithmMember<Snake> {
     }
 
     private void onSnakeCollide() {
+        deleteSnake();
+        setSnakeFinished();
         snakeCollisionObserverList.forEach(Observer::update);
     }
 
@@ -326,7 +359,6 @@ public class Snake implements GeneticAlgorithmMember<Snake> {
         getDistancePack(0, -1, input, 18);
         getDistancePack(1, -1, input, 21);
 
-        System.out.println("Input: " + Arrays.toString(input));
         double[] output = snakeBrain.getOutput(input);
 
         if (output != null) {
@@ -350,25 +382,17 @@ public class Snake implements GeneticAlgorithmMember<Snake> {
             }
         }
 
-        System.out.println("Output: " + Arrays.toString(output));
-
-        if (maxOutput > 0.6D) {
-            System.out.println("Moving " + iMax);
+        if (maxOutput > 0.9D) {
             if (iMax == 0) {
                 moveUp();
-                System.out.println("UP");
             } else if (iMax == 1) {
                 moveRight();
-                System.out.println("Right");
             } else if (iMax == 2) {
                 moveDown();
-                System.out.println("Down");
             } else if (iMax == 3) {
                 moveLeft();
-                System.out.println("Left");
             }
         }
-        System.out.println("");
     }
 
     private void getDistancePack(int dirX, int dirY, double[] buffer, int offset) {
@@ -421,20 +445,6 @@ public class Snake implements GeneticAlgorithmMember<Snake> {
     @Override
     public double score() {
         return score;
-    }
-
-    @Override
-    public int compare(GeneticAlgorithmMember memberA, GeneticAlgorithmMember memberB) {
-        double difference = memberB.fitness() - memberA.fitness();
-        if (difference < 0) {
-            return -1;
-        }
-
-        if (difference > 0) {
-            return 1;
-        }
-
-        return 0;
     }
 
     /* Point to chromosome and vice versa */
@@ -554,4 +564,22 @@ public class Snake implements GeneticAlgorithmMember<Snake> {
         return start + (end - start) * random.nextDouble();
     }
 
+
+    @Override
+    public int compareTo(Snake snake) {
+        double difference = this.fitness() - snake.fitness();
+        if (difference < 0) {
+            return -1;
+        }
+
+        if (difference > 0) {
+            return 1;
+        }
+
+        return 0;
+    }
+
+    public int[] getDirection() {
+        return direction;
+    }
 }
