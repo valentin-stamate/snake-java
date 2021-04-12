@@ -22,10 +22,9 @@ public class Board {
 
     private final int[][] boardMatrix;
 
-    private final int snakeInstances;
     private final List<Snake> snakeList;
 
-    private final GeneticAlgorithm<Snake> geneticAlgorithm;
+    private GeneticAlgorithm<Snake> geneticAlgorithm;
 
     private final int gameType;
 
@@ -37,19 +36,32 @@ public class Board {
         this.columns = columns;
         this.cellSize = cellSize;
         this.snakeList = new ArrayList<>();
-        this.snakeInstances = snakeInstances;
         this.gameType = gameType;
 
         this.boardMatrix = new int[rows][columns];
 
-        for (int i = 0; i < snakeInstances; i++) {
-            snakeList.add(new Snake(boardMatrix, rows, columns, cellSize * columns, cellSize * rows));
+        switch (gameType) {
+            case GameType.SINGLE_PLAYER:
+                addSnake();
+                break;
+            case GameType.TWO_PLAYERS:
+                addSnake();
+                addSnake();
+                break;
+            case GameType.SNAKE_AI:
+                for (int i = 0; i < snakeInstances; i++) {
+                    addSnake();
+                }
+                this.geneticAlgorithm = new GeneticAlgorithm<>(snakeList);
+                break;
         }
 
         parentContext.registerMethod("draw", this);
         parentContext.registerMethod("keyEvent", this);
+    }
 
-        this.geneticAlgorithm = new GeneticAlgorithm<>(snakeList);
+    private void addSnake() {
+        snakeList.add(new Snake(boardMatrix, rows, columns, cellSize * columns, cellSize * rows));
     }
 
     public void draw() {
@@ -104,20 +116,14 @@ public class Board {
                 parentContext.stroke(20);
 
                 switch (boardMatrix[i][j]) {
-                    case CellType.SNAKE_HEAD_CELL:
-                        parentContext.fill(175);
-                        break;
-                    case CellType.FOOD_CELL:
-                        parentContext.fill(235, 64, 52);
-                        break;
-                    case CellType.SNAKE_CELL:
-                        parentContext.fill(255);
-                        break;
-                    default:
+                    case CellType.SNAKE_HEAD_CELL -> parentContext.fill(175);
+                    case CellType.FOOD_CELL -> parentContext.fill(235, 64, 52);
+                    case CellType.SNAKE_CELL -> parentContext.fill(255);
+                    default -> {
                         parentContext.fill(20);
                         parentContext.stroke(255);
                         parentContext.strokeWeight(0);
-                        break;
+                    }
                 }
                 parentContext.rect(xStart + j * cellSize, yStart + i * cellSize, cellSize, cellSize);
             }
@@ -142,8 +148,12 @@ public class Board {
 
     public void keyEvent(KeyEvent event) {
         if (event.getAction() == KeyEvent.PRESS) {
-            movePlayerOne(event);
-//            movePlayerTwo(event);
+            if (gameType == GameType.SINGLE_PLAYER) {
+                movePlayerOne(event);
+            } else if (gameType == GameType.TWO_PLAYERS) {
+                movePlayerOne(event);
+                movePlayerTwo(event);
+            }
         }
     }
 
@@ -173,10 +183,6 @@ public class Board {
         char keyCodeChar = event.getKey();
 
         Snake snakeTwo = snakeList.get(1);
-
-        if (snakeTwo == null) {
-            return;
-        }
 
         if (keyCodeChar == 'w') {
             snakeTwo.moveUp();
