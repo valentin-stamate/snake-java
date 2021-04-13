@@ -27,6 +27,7 @@ public class Snake implements GeneticAlgorithmMember<Snake> {
     private final int[] foodPosition;
 
     private int score;
+    private int survivalTime;
 
     private final Food food;
 
@@ -34,8 +35,10 @@ public class Snake implements GeneticAlgorithmMember<Snake> {
     private final NeuralNetwork snakeBrain;
 
     /* Genetic Algorithm */
-    private final boolean chromosome[];
-    private final double vector[];
+    private final boolean[] chromosome;
+    private final double[] vector;
+
+    private final double[] vision;
 
     private final double intervalStart;
     private final double intervalEnd;
@@ -49,7 +52,7 @@ public class Snake implements GeneticAlgorithmMember<Snake> {
 
     private String deathCause = "";
 
-    private final double mutationRate = 0.01;
+    private final double mutationRate = 0.1;
 
     public Snake(int[][] boardMatrix, int rows, int columns, int width, int height) {
         this.boardMatrix = boardMatrix;
@@ -61,6 +64,7 @@ public class Snake implements GeneticAlgorithmMember<Snake> {
         this.foodPosition = new int[2];
         this.width = width;
         this.height = height;
+        this.vision = new double[24];
 
         this.snakeBrain = new NeuralNetwork(new int[]{24, 16, 4});
         this.food = new Food(boardMatrix, rows, columns);
@@ -98,12 +102,13 @@ public class Snake implements GeneticAlgorithmMember<Snake> {
         snakeIncrease = false;
         snakeFinished = false;
         score = 0;
+        survivalTime = 0;
         repositionFood();
     }
 
     private void initializeSnakePosition() {
-        int currentI = rows / 2;
-        int currentJ = columns / 2;
+        int currentI = rows / 2 + generateRandom(-7, 7);
+        int currentJ = columns / 2 + generateRandom(-7, 7);
 
         int startingLength = 4;
 
@@ -154,8 +159,10 @@ public class Snake implements GeneticAlgorithmMember<Snake> {
             snakeIncrease = false;
         }
 
-        canChangeDirection = true;
+        updateVision();
 
+        survivalTime++;
+        canChangeDirection = true;
     }
 
     private void onSnakeCollide() {
@@ -272,7 +279,8 @@ public class Snake implements GeneticAlgorithmMember<Snake> {
 
     public void addPoint() {
         snakeIncrease = true;
-        score += 3;
+        score+= 20;
+        survivalTime++;
     }
 
     /* Neural Network */
@@ -281,27 +289,28 @@ public class Snake implements GeneticAlgorithmMember<Snake> {
      * 2. tail
      * 3. food
      * 8 * 3 = 24 input size */
-    public void predictNextMove() {
-        double[] input = new double[24];
-        Arrays.fill(input, 0.01);
+    public void updateVision() {
+        Arrays.fill(vision, 0.01);
 
-        getDistancePack(1, 0, input, 0);
-        getDistancePack(1, 1, input, 3);
-        getDistancePack(0, 1, input, 6);
-        getDistancePack(-1, 1, input, 9);
-        getDistancePack(-1, 0, input, 12);
-        getDistancePack(-1, -1, input, 15);
-        getDistancePack(0, -1, input, 18);
-        getDistancePack(1, -1, input, 21);
+        getDistancePack(1, 0, vision, 0);
+        getDistancePack(1, 1, vision, 3);
+        getDistancePack(0, 1, vision, 6);
+        getDistancePack(-1, 1, vision, 9);
+        getDistancePack(-1, 0, vision, 12);
+        getDistancePack(-1, -1, vision, 15);
+        getDistancePack(0, -1, vision, 18);
+        getDistancePack(1, -1, vision, 21);
 
-        double[] output = snakeBrain.getOutput(input);
+    }
+
+    public void makeNextMove() {
+        double[] output = snakeBrain.getOutput(vision);
 
         if (output != null) {
             makeMoveFromOutput(output);
         } else {
             System.out.println("Output is null");
         }
-
     }
 
     private void makeMoveFromOutput(double[] output) {
@@ -317,7 +326,7 @@ public class Snake implements GeneticAlgorithmMember<Snake> {
             }
         }
 
-        if (maxOutput > 0.9D) {
+        if (maxOutput > 0.3D) {
             if (iMax == 0) {
                 moveUp();
             } else if (iMax == 1) {
@@ -370,7 +379,7 @@ public class Snake implements GeneticAlgorithmMember<Snake> {
 
     @Override
     public double fitness() {
-        return score();
+        return score + survivalTime;
     }
 
     @Override
@@ -499,11 +508,11 @@ public class Snake implements GeneticAlgorithmMember<Snake> {
     public int compareTo(Snake snake) {
         double difference = this.fitness() - snake.fitness();
         if (difference < 0) {
-            return -1;
+            return 1;
         }
 
         if (difference > 0) {
-            return 1;
+            return -1;
         }
 
         return 0;

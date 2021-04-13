@@ -25,6 +25,8 @@ public class GeneticAlgorithm<M extends GeneticAlgorithmMember<M>> {
         crossover();
         evaluate();
         select();
+
+        System.out.println("Best score: " + population.get(0).fitness() + "\n");
     }
 
     private void mutate() {

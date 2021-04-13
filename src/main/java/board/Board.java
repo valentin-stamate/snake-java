@@ -86,7 +86,7 @@ public class Board {
 
     private void predictSnakesMovement() {
         for (Snake snake : snakeList) {
-            snake.predictNextMove();
+            snake.makeNextMove();
         }
     }
 
