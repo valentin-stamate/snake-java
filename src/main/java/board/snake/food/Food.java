@@ -1,9 +1,6 @@
-package board.food;
+package board.snake.food;
 
 import board.CellType;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class Food {
 
@@ -16,6 +13,7 @@ public class Food {
         this.boardMatrix = boardMatrix;
     }
 
+    /* GETTERS AND SETTERS */
     public void updateFoodPosition(int i, int j) {
         this.i = i;
         this.j = j;
@@ -29,7 +27,9 @@ public class Food {
         return j;
     }
 
+    /* DRAWING LOGIC */
     public void drawFood() {
         boardMatrix[i][j] = CellType.FOOD_CELL;
     }
+
 }

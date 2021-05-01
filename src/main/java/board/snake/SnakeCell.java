@@ -1,14 +1,15 @@
 package board.snake;
 
 class SnakeCell {
-    private int i;
-    private int j;
+    private final int i;
+    private final int j;
 
     SnakeCell(int i, int j) {
         this.i = i;
         this.j = j;
     }
 
+    /* GETTERS AND SETTERS */
     public int getI() {
         return i;
     }
@@ -21,6 +22,7 @@ class SnakeCell {
         return new SnakeCell(i, j);
     }
 
+    /* USED FOR MAPPING THE SNAKE TAIL */
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

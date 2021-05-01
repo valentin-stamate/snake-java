@@ -21,6 +21,7 @@ public abstract class SnakeController {
 
     public abstract void run();
 
+    /* KEYBOARD MOVING LOGIC */
     protected void moveByRightController(KeyEvent event, Snake snake) {
         int keyCode = event.getKeyCode();
 
