@@ -10,13 +10,9 @@ public class Food {
     private int i = 0;
     private int j = 0;
 
-    private int rows;
-    private int columns;
-    private int[][] boardMatrix;
+    private final int[][] boardMatrix;
 
-    public Food(int[][] boardMatrix, int rows, int columns) {
-        this.rows = rows;
-        this.columns = columns;
+    public Food(int[][] boardMatrix) {
         this.boardMatrix = boardMatrix;
     }
 

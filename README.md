@@ -1,1 +1,1 @@
-# Snake-AI
+# Conquering The Snake

@@ -4,63 +4,55 @@ import board.snake.Snake;
 import genetic_algorithm.GeneticAlgorithm;
 import processing.core.PApplet;
 import processing.event.KeyEvent;
+import util.Config;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class Board {
 
-    private final PApplet parentContext;
-
-    private final int xStart;
-    private final int yStart;
-    private final int rows;
-    private final int columns;
-
-    private final int cellSize;
-
     private final int[][] boardMatrix;
-
     private final List<Snake> snakeList;
+    private final PApplet pApplet;
 
-    private GeneticAlgorithm<Snake> geneticAlgorithm;
+//    private GeneticAlgorithm<Snake> geneticAlgorithm;
 
-    private final int gameType;
+    public Board(PApplet pApplet, List<Snake> snakeList) {
+        this.pApplet = pApplet;
+        this.snakeList = snakeList;
+//        this.parentContext = parent;
+//        this.snakeList = new ArrayList<>();
 
-    public Board(PApplet parent, int xStart, int yStart, int rows, int columns, int cellSize, int gameType) {
-        this.parentContext = parent;
-        this.xStart = xStart;
-        this.yStart = yStart;
-        this.rows = rows;
-        this.columns = columns;
-        this.cellSize = cellSize;
-        this.snakeList = new ArrayList<>();
-        this.gameType = gameType;
+        this.boardMatrix = new int[Config.BOARD_ROWS][Config.BOARD_COLUMNS];
 
-        this.boardMatrix = new int[rows][columns];
+//        switch (gameType) {
+//            case GameType.SINGLE_PLAYER:
+//                addSnake();
+//                break;
+//            case GameType.TWO_PLAYERS:
+//                addSnake();
+//                addSnake();
+//                break;
+//            case GameType.SNAKE_AI:
+//                for (int i = 0; i < GeneticAlgorithm.POPULATION_SIZE; i++) {
+//                    addSnake();
+//                }
+//                this.geneticAlgorithm = new GeneticAlgorithm<>(snakeList);
+//                break;
+//        }
 
-        switch (gameType) {
-            case GameType.SINGLE_PLAYER:
-                addSnake();
-                break;
-            case GameType.TWO_PLAYERS:
-                addSnake();
-                addSnake();
-                break;
-            case GameType.SNAKE_AI:
-                for (int i = 0; i < GeneticAlgorithm.POPULATION_SIZE; i++) {
-                    addSnake();
-                }
-                this.geneticAlgorithm = new GeneticAlgorithm<>(snakeList);
-                break;
-        }
-
-        parentContext.registerMethod("draw", this);
-        parentContext.registerMethod("keyEvent", this);
     }
 
-    private void addSnake() {
-        snakeList.add(new Snake(boardMatrix, rows, columns, cellSize * columns, cellSize * rows));
+//    private void addSnake() {
+//        snakeList.add(new Snake(boardMatrix, rows, columns, cellSize * columns, cellSize * rows));
+//    }
+
+    public int[][] getBoardMatrix() {
+        return boardMatrix;
+    }
+
+    public void start() {
+        this.pApplet.registerMethod("draw", this);
     }
 
     public void draw() {
@@ -69,14 +61,15 @@ public class Board {
 
         drawSnakes();
 
-        if (parentContext.frameCount % 1 == 0) {
+        if (pApplet.frameCount % 5 == 0) {
             makeSnakeStep();
 
-            if (gameType == GameType.SNAKE_AI) {
-                checkPopulation();
-            }
+//            if (gameType == GameType.SNAKE_AI) {
+//                checkPopulation();
+//            }
 
-            predictSnakesMovement();
+//            predictSnakesMovement();
+            /* TODO, add an observer */
         }
 
         drawBoard();
@@ -84,32 +77,32 @@ public class Board {
 
     }
 
-    private void predictSnakesMovement() {
-        for (Snake snake : snakeList) {
-            snake.makeNextMove();
-        }
-    }
+//    private void predictSnakesMovement() {
+//        for (Snake snake : snakeList) {
+//            snake.makeNextMove();
+//        }
+//    }
 
-    private void checkPopulation() {
-        boolean allSnakesDead = true;
-        for (Snake snake : snakeList) {
-            if (!snake.isFinished()) {
-                allSnakesDead = false;
-                break;
-            }
-        }
-
-        if (allSnakesDead) {
-            geneticAlgorithm.nextGeneration();
-            System.out.println("Generation " + geneticAlgorithm.getGeneration());
-
-            reinitializeSnakes();
-        }
-    }
+//    private void checkPopulation() {
+//        boolean allSnakesDead = true;
+//        for (Snake snake : snakeList) {
+//            if (!snake.isFinished()) {
+//                allSnakesDead = false;
+//                break;
+//            }
+//        }
+//
+//        if (allSnakesDead) {
+//            geneticAlgorithm.nextGeneration();
+//            System.out.println("Generation " + geneticAlgorithm.getGeneration());
+//
+//            reinitializeSnakes();
+//        }
+//    }
 
     private void clearBoard() {
-        for (int i = 0; i < rows; i++) {
-            for (int j = 0; j < columns; j++) {
+        for (int i = 0; i < Config.BOARD_ROWS; i++) {
+            for (int j = 0; j < Config.BOARD_COLUMNS; j++) {
                 boardMatrix[i][j] = CellType.EMPTY_CELL;
             }
         }
@@ -121,6 +114,7 @@ public class Board {
         }
     }
 
+
     void makeSnakeStep() {
         for (Snake snake : snakeList) {
             snake.makeStep();
@@ -128,89 +122,48 @@ public class Board {
     }
 
     void drawBoard() {
-        for (int i = 0; i < rows; i++) {
-            for (int j = 0; j < columns; j++) {
-                parentContext.strokeWeight(1.5f);
-                parentContext.stroke(20);
+        for (int i = 0; i < Config.BOARD_ROWS; i++) {
+            for (int j = 0; j < Config.BOARD_COLUMNS; j++) {
+                pApplet.strokeWeight(1.5f);
+                pApplet.stroke(20);
 
                 switch (boardMatrix[i][j]) {
-                    case CellType.SNAKE_HEAD_CELL -> parentContext.fill(175);
-                    case CellType.FOOD_CELL -> parentContext.fill(235, 64, 52);
-                    case CellType.SNAKE_CELL -> parentContext.fill(255);
-                    default -> {
-                        parentContext.fill(20);
-                        parentContext.stroke(255);
-                        parentContext.strokeWeight(0);
+                    case CellType.SNAKE_HEAD_CELL:
+                        pApplet.fill(175);
+                        break;
+                    case CellType.FOOD_CELL:
+                        pApplet.fill(235, 64, 52);
+                        break;
+                    case CellType.SNAKE_CELL:
+                        pApplet.fill(255);
+                        break;
+                    default: {
+                        pApplet.fill(20);
+                        pApplet.stroke(255);
+                        pApplet.strokeWeight(0);
                     }
                 }
-                parentContext.rect(xStart + j * cellSize, yStart + i * cellSize, cellSize, cellSize);
+                pApplet.rect(Config.BOARD_X + j * Config.CELL_SIZE, Config.BOARD_Y + i * Config.CELL_SIZE, Config.CELL_SIZE, Config.CELL_SIZE);
             }
         }
 
-        int boardPWidth = columns * cellSize;
-        int boardPHeight = rows * cellSize;
+        int boardPWidth = Config.BOARD_COLUMNS * Config.CELL_SIZE;
+        int boardPHeight = Config.BOARD_ROWS * Config.CELL_SIZE;
 
-        parentContext.stroke(255);
-        parentContext.strokeWeight(2);
-        parentContext.line(xStart, yStart, xStart, yStart + boardPHeight);
-        parentContext.line(xStart, yStart, xStart + boardPWidth, yStart);
-        parentContext.line(xStart + boardPWidth, yStart, xStart + boardPWidth, yStart + boardPHeight);
-        parentContext.line(xStart, yStart + boardPHeight, xStart + boardPWidth, yStart + boardPHeight);
+        pApplet.stroke(255);
+        pApplet.strokeWeight(2);
+        pApplet.line(Config.BOARD_X, Config.BOARD_Y, Config.BOARD_X, Config.BOARD_Y + boardPHeight);
+        pApplet.line(Config.BOARD_X, Config.BOARD_Y, Config.BOARD_X + boardPWidth, Config.BOARD_Y);
+        pApplet.line(Config.BOARD_X + boardPWidth, Config.BOARD_Y, Config.BOARD_X + boardPWidth, Config.BOARD_Y + boardPHeight);
+        pApplet.line(Config.BOARD_X, Config.BOARD_Y + boardPHeight, Config.BOARD_X + boardPWidth, Config.BOARD_Y + boardPHeight);
     }
+//
+//    private void reinitializeSnakes() {
+//        for (Snake snake : snakeList) {
+//            snake.initialize();
+//        }
+//    }
+//
 
-    private void reinitializeSnakes() {
-        for (Snake snake : snakeList) {
-            snake.initialize();
-        }
-    }
-
-    public void keyEvent(KeyEvent event) {
-        if (event.getAction() == KeyEvent.PRESS) {
-            if (gameType == GameType.SINGLE_PLAYER) {
-                movePlayerOne(event);
-            } else if (gameType == GameType.TWO_PLAYERS) {
-                movePlayerOne(event);
-                movePlayerTwo(event);
-            }
-        }
-    }
-
-    public void movePlayerOne(KeyEvent event) {
-        int keyCode = event.getKeyCode();
-
-        final int UP = parentContext.UP;
-        final int LEFT = parentContext.LEFT;
-        final int RIGHT = parentContext.RIGHT;
-        final int BOTTOM = parentContext.DOWN;
-
-        Snake snakeOne = snakeList.get(0);
-
-        if (keyCode == UP) {
-            snakeOne.moveUp();
-        } else if (keyCode == LEFT) {
-            snakeOne.moveLeft();
-        } else if (keyCode == RIGHT) {
-            snakeOne.moveRight();
-        } else if (keyCode == BOTTOM) {
-            snakeOne.moveDown();
-        }
-
-    }
-
-    private void movePlayerTwo(KeyEvent event) {
-        char keyCodeChar = event.getKey();
-
-        Snake snakeTwo = snakeList.get(1);
-
-        if (keyCodeChar == 'w') {
-            snakeTwo.moveUp();
-        } else if (keyCodeChar == 'a') {
-            snakeTwo.moveLeft();
-        } else if (keyCodeChar == 's') {
-            snakeTwo.moveDown();
-        } else if (keyCodeChar == 'd') {
-            snakeTwo.moveRight();
-        }
-    }
 
 }
