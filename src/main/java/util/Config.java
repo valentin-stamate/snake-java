@@ -1,6 +1,11 @@
 package util;
 
 public class Config {
+    /* CANVAS */
+    public static final int FRAMERATE = 60;
+    public static final int REFRESH_RATE = 5;
+
+    /* BOARD */
     public static final int CANVAS_WIDTH = 720;
     public static final int CANVAS_HEIGHT = 644;
 

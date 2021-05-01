@@ -1,5 +1,6 @@
 import controller.SinglePlayerController;
 import controller.SnakeController;
+import controller.TwoPlayersController;
 import processing.core.PApplet;
 import util.Config;
 
@@ -11,10 +12,10 @@ public class Main extends PApplet {
 
     public void setup() {
         background(25);
-        frameRate(60);
+        frameRate(Config.FRAMERATE);
         strokeCap(ROUND);
 
-        SnakeController snakeController = new SinglePlayerController(this);
+        SnakeController snakeController = new TwoPlayersController(this);
         snakeController.run();
     }
 

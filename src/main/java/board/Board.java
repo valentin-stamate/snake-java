@@ -61,7 +61,7 @@ public class Board {
 
         drawSnakes();
 
-        if (pApplet.frameCount % 5 == 0) {
+        if (pApplet.frameCount % Config.REFRESH_RATE == 0) {
             makeSnakeStep();
 
 //            if (gameType == GameType.SNAKE_AI) {
