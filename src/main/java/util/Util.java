@@ -9,6 +9,10 @@ public abstract class Util {
         return i * columns + j;
     }
 
+    public static int getNodeCount(int i, int j) {
+        return i * Config.BOARD_COLUMNS + j;
+    }
+
     public static void getNeighbours(int[] current, int[] up, int[] right, int[] down, int[] left) {
         int n = Config.BOARD_ROWS;
         int m = Config.BOARD_COLUMNS;

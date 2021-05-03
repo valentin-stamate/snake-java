@@ -16,4 +16,22 @@ public class Node {
     public int getJ() {
         return j;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Node node = (Node) o;
+
+        if (i != node.i) return false;
+        return j == node.j;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = i;
+        result = 31 * result + j;
+        return result;
+    }
 }

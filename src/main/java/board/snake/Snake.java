@@ -55,12 +55,25 @@ public class Snake {
         int currentI = Config.BOARD_ROWS / 2 + Util.generateRandom(-7, 7);
         int currentJ = Config.BOARD_COLUMNS / 2 + Util.generateRandom(-7, 7);
 
-        int startingLength = 3;
+        if (Config.BOARD_COLUMNS < 10) {
+            currentI = 2;
+            currentJ = 2;
+        }
+
+        int startingLength = 4;
 
         for (int i = 0; i < startingLength; i++) {
             snakeCells.add(new SnakeCell(currentI, currentJ));
             currentI -= direction[0];
             currentJ -= direction[1];
+
+            if (currentI < 0 || currentI >= Config.BOARD_ROWS) {
+                break;
+            }
+
+            if (currentJ < 0 || currentJ >= Config.BOARD_COLUMNS) {
+                break;
+            }
         }
     }
 
@@ -160,11 +173,11 @@ public class Snake {
     }
 
     /* GETTERS AND SETTERS */
-    public int getNextI() {
+    private int getNextI() {
         return snakeCells.get(0).getI() + direction[0];
     }
 
-    public int getNextJ() {
+    private int getNextJ() {
         return snakeCells.get(0).getJ() + direction[1];
     }
 
@@ -175,7 +188,6 @@ public class Snake {
     public int getHeadJ() {
         return snakeCells.get(0).getJ();
     }
-
 
     public int getScore() {
         return score;

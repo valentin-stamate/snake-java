@@ -1,10 +1,7 @@
 package controller;
 
-import board.CellType;
 import board.snake.Snake;
-import board.snake.food.Food;
 import controller.node.Node;
-import observer.OnRefresh;
 import processing.core.PApplet;
 import util.Config;
 import util.Util;
@@ -14,12 +11,12 @@ import java.util.stream.Collectors;
 
 public class HamiltonController extends SnakeController {
 
-    private final int[][] pathGraph;
+    private final int[] path;
     private Snake snake;
 
     public HamiltonController(PApplet pApplet) {
         super(pApplet);
-        this.pathGraph = getPath();
+        this.path = getPath();
         this.snake = new Snake(super.board.getBoardMatrix());
         super.snakeList.add(snake);
     }
@@ -27,30 +24,20 @@ public class HamiltonController extends SnakeController {
     @Override
     public void run() {
 
-        for (int i = 0; i < pathGraph.length; i++) {
-            for (int j = 0; j < pathGraph[0].length; j++) {
-                System.out.print(pathGraph[i][j] + " ");
-            }
-            System.out.println("");
-        }
-
         super.board.start();
         board.setOnRefreshListener(() -> {
             int i = snake.getHeadI();
-            int j = snake.getNextJ();
+            int j = snake.getHeadJ();
 
-            System.out.println("Current position:" + i + " " + j);
+            int currentNode = Util.getNodeCount(i, j);
+            int nextNode = path[currentNode];
 
-            int pathI = i + (i + 1) / 2;
-            int pathJ = j + (j + 1) / 2;
-
-            Node node = new Node(pathI, pathJ);
-            int[] direction = snake.getDirection();
-            Node nextPosition = getNext(pathGraph, node, direction);
+            int nI = nextNode / Config.BOARD_COLUMNS;
+            int nJ = nextNode % Config.BOARD_COLUMNS;
 
             int[] newDirection = new int[2];
-            newDirection[0] = nextPosition.getI() - node.getI();
-            newDirection[1] = nextPosition.getJ() - node.getJ();
+            newDirection[0] = nI - i;
+            newDirection[1] = nJ - j;
 
             if (newDirection[0] == 0 && newDirection[1] == 1) {
                 snake.moveRight();
@@ -71,11 +58,87 @@ public class HamiltonController extends SnakeController {
         });
     }
 
-    private int[][] getPath() {
+    public int[] getPath() {
+        int n = Config.BOARD_ROWS;
+        int m = Config.BOARD_COLUMNS;
+
+        int[] path = new int[n * m];
+
         int[][] halfMST = getHalfMST();
         int[][] walls = convertToWalls(halfMST);
 
-        return convertToFullPath(walls);
+        int[][] graphPath = convertToFullPath(walls);
+
+        Node startNode = new Node(0, 0);
+        path[0] = 1;
+
+        Node currentNode = new Node(0, 1);
+
+        int[] direction = new int[]{0, 1};
+
+        while (!currentNode.equals(startNode)) {
+
+            List<Node> neighbours = getGraphPathNeighbours(graphPath, currentNode, direction);
+
+            if (neighbours.size() == 0) {
+                /* This should never be displayed */
+                System.out.println("Something went wrong");
+                break;
+            }
+
+            Node nextNode = neighbours.get(0);
+
+            int nodeCount = mapToNormalGraph(graphPath, currentNode);
+            int nextNodeCount = mapToNormalGraph(graphPath, nextNode);
+
+            System.out.println("Current Node:" + currentNode.getI() + " " + currentNode.getJ());
+            System.out.println("Next Node:" + nextNode.getI() + " " + nextNode.getJ());
+            System.out.printf("%d -> %d\n", nodeCount, nextNodeCount);
+            System.out.println("");
+
+            path[nodeCount] = nextNodeCount;
+
+            direction[0] = nextNode.getI() - currentNode.getI();
+            direction[1] = nextNode.getJ() - currentNode.getJ();
+
+            currentNode = nextNode;
+        }
+
+        path[0] = 1;
+
+        return path;
+    }
+
+    int mapToNormalGraph(int[][] pathGraph, Node node) {
+        int i = node.getI();
+        int j = node.getJ();
+
+        return mapToNormalIndex(i) * Config.BOARD_COLUMNS + mapToNormalIndex(j);
+    }
+
+    private int mapToNormalIndex(int n) {
+        if (n % 3 == 0) {
+            return (n / 3) * 2;
+        }
+
+        return (n / 3) * 2 + (n % 3 + 1) % 2;
+    }
+
+    private List<Node> getGraphPathNeighbours(int[][] graphPath, Node node, int[] direction) {
+        List<Node> neighbours = new ArrayList<>();
+
+        neighbours.add(getNodeSafely(graphPath, node.getI() + direction[1], node.getJ() - direction[0])); // (y, -x)
+        neighbours.add(getNodeSafely(graphPath, node.getI() + direction[0], node.getJ() + direction[1])); // (x, y)
+        neighbours.add(getNodeSafely(graphPath, node.getI() - direction[1], node.getJ() + direction[0])); // (-y, x)
+
+        neighbours = neighbours.stream().filter(Objects::nonNull).collect(Collectors.toList());
+        neighbours = neighbours.stream().filter(neighbour -> {
+            int i = neighbour.getI();
+            int j = neighbour.getJ();
+            return graphPath[i][j] == 0;
+        }).collect(Collectors.toList());
+
+        return neighbours;
     }
 
     private int[][] convertToFullPath(int[][] mst) {
@@ -220,27 +283,6 @@ public class HamiltonController extends SnakeController {
         }
 
         return graph;
-    }
-
-    private Node getNext(int[][] graph, Node node, int[] direction) {
-        int i = node.getI();
-        int j = node.getJ();
-
-        List<Node> neighbours = new ArrayList<>();
-
-        neighbours.add(getNodeSafely(graph, i - direction[1], j + direction[0]));
-        neighbours.add(getNodeSafely(graph, i + direction[0], j + direction[1]));
-        neighbours.add(getNodeSafely(graph, i + direction[1], j - direction[0]));
-
-        neighbours = neighbours.stream().filter(Objects::nonNull).collect(Collectors.toList());
-
-        neighbours = neighbours.stream().filter(neighbour -> {
-            int nI = neighbour.getI();
-            int nJ = neighbour.getJ();
-            return graph[nI][nJ] == 0;
-        }).collect(Collectors.toList());
-
-        return neighbours.get(0);
     }
 
     private Node getNodeSafely(int[][] graph, int i, int j) {

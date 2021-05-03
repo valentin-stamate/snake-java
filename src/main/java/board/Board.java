@@ -2,7 +2,6 @@ package board;
 
 import board.snake.Snake;
 import observer.Observer;
-import observer.OnRefresh;
 import processing.core.PApplet;
 import util.Config;
 
@@ -31,7 +30,7 @@ public class Board {
     }
 
     /* OBSERVER */
-    public void setOnRefreshListener(OnRefresh observer) {
+    public void setOnRefreshListener(Observer observer) {
         observers.add(observer);
     }
 
