@@ -88,13 +88,8 @@ public class HamiltonController extends SnakeController {
 
             Node nextNode = neighbours.get(0);
 
-            int nodeCount = mapToNormalGraph(graphPath, currentNode);
-            int nextNodeCount = mapToNormalGraph(graphPath, nextNode);
-
-            System.out.println("Current Node:" + currentNode.getI() + " " + currentNode.getJ());
-            System.out.println("Next Node:" + nextNode.getI() + " " + nextNode.getJ());
-            System.out.printf("%d -> %d\n", nodeCount, nextNodeCount);
-            System.out.println("");
+            int nodeCount = mapToNormalGraph(currentNode);
+            int nextNodeCount = mapToNormalGraph(nextNode);
 
             path[nodeCount] = nextNodeCount;
 
@@ -109,7 +104,7 @@ public class HamiltonController extends SnakeController {
         return path;
     }
 
-    int mapToNormalGraph(int[][] pathGraph, Node node) {
+    int mapToNormalGraph(Node node) {
         int i = node.getI();
         int j = node.getJ();
 
@@ -261,6 +256,8 @@ public class HamiltonController extends SnakeController {
 
             unvisitedNeighbours.add(neighbour);
         }
+
+        Collections.shuffle(unvisitedNeighbours);
 
         return unvisitedNeighbours;
     }
