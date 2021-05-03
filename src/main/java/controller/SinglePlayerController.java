@@ -10,8 +10,8 @@ public class SinglePlayerController extends SnakeController {
 
     public SinglePlayerController(PApplet pApplet) {
         super(pApplet);
-        super.snakeList.add(new Snake(super.board.getBoardMatrix()));
-        this.snake = super.snakeList.get(0);
+        this.snake = new Snake(super.board.getBoardMatrix());
+        super.snakeList.add(snake);
     }
 
     @Override

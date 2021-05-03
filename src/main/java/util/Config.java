@@ -12,10 +12,10 @@ public class Config {
     public static final int BOARD_WIDTH = 540;
     public static final int BOARD_HEIGHT = CANVAS_HEIGHT;
 
-    public static final int BOARD_ROWS = 32;
+    public static final int BOARD_ROWS = 16 * 2;
+    public static final int BOARD_COLUMNS = 16 * 2;
     public static final int CELL_SIZE = BOARD_HEIGHT / BOARD_ROWS;
-    public static final int BOARD_COLUMNS = BOARD_WIDTH / CELL_SIZE;
 
-    public static final int BOARD_X = 100;
+    public static final int BOARD_X = 40;
     public static final int BOARD_Y = 2;
 }

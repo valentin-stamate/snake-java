@@ -11,10 +11,10 @@ public class TwoPlayersController extends SnakeController{
 
     public TwoPlayersController(PApplet pApplet) {
         super(pApplet);
-        super.snakeList.add(new Snake(super.board.getBoardMatrix()));
-        super.snakeList.add(new Snake(super.board.getBoardMatrix()));
-        this.snakeA = super.snakeList.get(0);
-        this.snakeB = super.snakeList.get(1);
+        this.snakeA = new Snake(super.board.getBoardMatrix());
+        this.snakeB = new Snake(super.board.getBoardMatrix());
+        super.snakeList.add(snakeA);
+        super.snakeList.add(snakeB);
     }
 
     @Override

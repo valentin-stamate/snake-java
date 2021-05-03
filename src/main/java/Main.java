@@ -1,3 +1,4 @@
+import controller.HamiltonController;
 import controller.SinglePlayerController;
 import controller.SnakeController;
 import controller.TwoPlayersController;
@@ -15,7 +16,7 @@ public class Main extends PApplet {
         frameRate(Config.FRAMERATE);
         strokeCap(ROUND);
 
-        SnakeController snakeController = new TwoPlayersController(this);
+        SnakeController snakeController = new HamiltonController(this);
         snakeController.run();
     }
 

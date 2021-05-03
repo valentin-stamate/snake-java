@@ -55,7 +55,7 @@ public class Snake {
         int currentI = Config.BOARD_ROWS / 2 + Util.generateRandom(-7, 7);
         int currentJ = Config.BOARD_COLUMNS / 2 + Util.generateRandom(-7, 7);
 
-        int startingLength = 4;
+        int startingLength = 3;
 
         for (int i = 0; i < startingLength; i++) {
             snakeCells.add(new SnakeCell(currentI, currentJ));
@@ -185,6 +185,10 @@ public class Snake {
         return snakeFinished;
     }
 
+    public int[] getDirection() {
+        return new int[]{direction[0], direction[1]};
+    }
+
     /* CHANGING DIRECTION */
     public void moveUp() {
         if (direction[0] == 1 || !canChangeDirection) {
@@ -225,5 +229,4 @@ public class Snake {
         direction[1] = 0;
         canChangeDirection = false;
     }
-
 }
