@@ -210,6 +210,7 @@ public class HamiltonController extends SnakeController {
         reachableNodes.add(halfGraph[0][0]);
 
         while (!reachableNodes.isEmpty()) {
+            reachableNodes = randomizeQueue(reachableNodes);
             Node node = reachableNodes.poll();
             int nCount = Util.getNodeCount(node.getI(), node.getJ(), m / 2);
 
@@ -231,6 +232,15 @@ public class HamiltonController extends SnakeController {
         }
 
         return rawHalfGraph;
+    }
+
+    /* I know it's not time efficient, but it's good for it's purpose */
+    private Queue<Node> randomizeQueue(Queue<Node> queue) {
+        List<Node> buffer = new ArrayList<>(queue);
+
+        Collections.shuffle(buffer);
+
+        return new LinkedList<>(buffer);
     }
 
     private List<Node> getUnvisitedNeighbours(Node[][] graph, HashSet<Node> visitedNodes, Node node) {
@@ -256,8 +266,6 @@ public class HamiltonController extends SnakeController {
 
             unvisitedNeighbours.add(neighbour);
         }
-
-        Collections.shuffle(unvisitedNeighbours);
 
         return unvisitedNeighbours;
     }
