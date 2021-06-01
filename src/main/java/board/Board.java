@@ -2,8 +2,11 @@ package board;
 
 import board.snake.Snake;
 import observer.Observer;
+import observer.OnUpdateObserver;
+import panel.SideElements;
 import processing.core.PApplet;
 import util.Config;
+import util.GameType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,7 +25,6 @@ public class Board {
         this.observers = new ArrayList<>();
 
         this.boardMatrix = new int[Config.BOARD_ROWS][Config.BOARD_COLUMNS];
-
     }
 
     public void start() {
@@ -50,7 +52,9 @@ public class Board {
             makeSnakeStep();
 
             for (Observer observer : observers) {
-                observer.update();
+                if (observer instanceof OnUpdateObserver) {
+                    observer.update();
+                }
             }
         }
 
@@ -98,9 +102,21 @@ public class Board {
         pApplet.line(Config.BOARD_X, Config.BOARD_Y, Config.BOARD_X + boardPWidth, Config.BOARD_Y);
         pApplet.line(Config.BOARD_X + boardPWidth, Config.BOARD_Y, Config.BOARD_X + boardPWidth, Config.BOARD_Y + boardPHeight);
         pApplet.line(Config.BOARD_X, Config.BOARD_Y + boardPHeight, Config.BOARD_X + boardPWidth, Config.BOARD_Y + boardPHeight);
+
+        SideElements.drawTitle(pApplet);
+        SideElements.drawScore(pApplet);
+
+        if (Config.GAME_TYPE == GameType.SINGLE_PLAYER) {
+            SideElements.drawScoreFirstPlayer(pApplet);
+        } else if (Config.GAME_TYPE == GameType.TWO_PLAYERS) {
+            SideElements.drawScoreFirstPlayer(pApplet);
+            SideElements.drawScoreSecondPlayer(pApplet);
+        }
     }
 
     private void clearBoard() {
+        pApplet.background(20);
+
         for (int i = 0; i < Config.BOARD_ROWS; i++) {
             for (int j = 0; j < Config.BOARD_COLUMNS; j++) {
                 boardMatrix[i][j] = CellType.EMPTY_CELL;

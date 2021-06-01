@@ -1,8 +1,12 @@
 package controller;
 
 import board.snake.Snake;
+import board.snake.SnakeData;
+import observer.OnFoodEaten;
+import panel.SideElements;
 import processing.core.PApplet;
 import processing.event.KeyEvent;
+import request.Backend;
 
 public class TwoPlayersController extends SnakeController{
 
@@ -15,6 +19,40 @@ public class TwoPlayersController extends SnakeController{
         this.snakeB = new Snake(super.board.getBoardMatrix());
         super.snakeList.add(snakeA);
         super.snakeList.add(snakeB);
+
+        SideElements.updateScoreList();
+
+        snakeA.addOnFinishObserver((data) -> {
+            SnakeData snakeData = (SnakeData) data;
+            Backend backend = new Backend();
+
+            new Thread(() -> {
+                backend.send(snakeData);
+                SideElements.updateScoreList();
+            }).start();
+
+            SideElements.updateScoreList();
+        });
+
+        snakeA.addObserver((OnFoodEaten) () -> {
+            SideElements.setPlayerOneScore(snakeA.getScore());
+        });
+
+        snakeB.addOnFinishObserver((data) -> {
+            SnakeData snakeData = (SnakeData) data;
+            Backend backend = new Backend();
+
+            new Thread(() -> {
+                backend.send(snakeData);
+                SideElements.updateScoreList();
+            }).start();
+
+            SideElements.updateScoreList();
+        });
+
+        snakeB.addObserver((OnFoodEaten) () -> {
+            SideElements.setPlayerTwoScore(snakeB.getScore());
+        });
     }
 
     @Override

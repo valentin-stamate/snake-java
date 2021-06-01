@@ -2,6 +2,9 @@ package board.snake;
 
 import board.CellType;
 import board.snake.food.Food;
+import observer.Observer;
+import observer.OnFinishObserver;
+import observer.OnFoodEaten;
 import util.Config;
 import util.Util;
 import java.util.*;
@@ -21,10 +24,15 @@ public class Snake {
     private final Food food;
     private int score;
 
+    private final List<OnFinishObserver> onFinishObservers;
+    private final List<Observer> observerList;
+
     public Snake(int[][] boardMatrix) {
         this.boardMatrix = boardMatrix;
         this.snakeCells = new ArrayList<>();
         this.snakeCellsHashSet = new HashSet<>();
+        this.onFinishObservers = new ArrayList<>();
+        this.observerList = new ArrayList<>();
         this.score = 0;
 
         this.food = new Food(boardMatrix);
@@ -140,6 +148,13 @@ public class Snake {
     }
 
     private void onSnakeCollide() {
+        /* TODO, maybe change this logic a little bit? */
+        SnakeData snakeData = new SnakeData("Snake", score,
+                String.format("%s x %s", Config.BOARD_ROWS, Config.BOARD_COLUMNS));
+
+        for (OnFinishObserver observer : onFinishObservers) {
+            observer.update(snakeData);
+        }
         snakeFinished = true;
     }
 
@@ -170,9 +185,23 @@ public class Snake {
     public void addPoint() {
         snakeIncrease = true;
         score+= 5;
+
+        for (Observer observer : observerList) {
+            if (observer instanceof OnFoodEaten) {
+                observer.update();
+            }
+        }
     }
 
     /* GETTERS AND SETTERS */
+    public void addOnFinishObserver(OnFinishObserver observer) {
+        onFinishObservers.add(observer);
+    }
+
+    public void addObserver(Observer observer) {
+        observerList.add(observer);
+    }
+
     private int getNextI() {
         return snakeCells.get(0).getI() + direction[0];
     }

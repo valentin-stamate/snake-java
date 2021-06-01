@@ -2,17 +2,17 @@ package controller;
 
 import board.snake.Snake;
 import controller.node.Node;
+import observer.OnUpdateObserver;
 import processing.core.PApplet;
 import util.Config;
 import util.Util;
-
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class HamiltonController extends SnakeController {
 
     private final int[] path;
-    private Snake snake;
+    private final Snake snake;
 
     public HamiltonController(PApplet pApplet) {
         super(pApplet);
@@ -25,7 +25,8 @@ public class HamiltonController extends SnakeController {
     public void run() {
 
         super.board.start();
-        board.setOnRefreshListener(() -> {
+        board.setOnRefreshListener((OnUpdateObserver) () -> {
+
             int i = snake.getHeadI();
             int j = snake.getHeadJ();
 

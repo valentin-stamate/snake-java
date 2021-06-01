@@ -4,6 +4,7 @@ import controller.SnakeController;
 import controller.TwoPlayersController;
 import processing.core.PApplet;
 import util.Config;
+import util.GameType;
 
 public class Main extends PApplet {
 
@@ -16,7 +17,22 @@ public class Main extends PApplet {
         frameRate(Config.FRAMERATE);
         strokeCap(ROUND);
 
-        SnakeController snakeController = new HamiltonController(this);
+        SnakeController snakeController = null;
+
+        int gameType = Config.GAME_TYPE;
+
+        switch (gameType) {
+            case GameType.SINGLE_PLAYER:
+                snakeController = new SinglePlayerController(this);
+                break;
+            case GameType.TWO_PLAYERS:
+                snakeController = new TwoPlayersController(this);
+                break;
+            default:
+                snakeController = new HamiltonController(this);
+
+        }
+
         snakeController.run();
     }
 
