@@ -18,7 +18,7 @@ has no brain. The snake will always follow a path that visits all the cells. Thi
 the walls. The idea behind is creating a MST with half of the board then try to surround the 'lines' to get the path.
 More about this process in the resource section.
  
-### Main Libraries/Frameworks Used
+### window.MainWindow Libraries/Frameworks Used
  * [Processing](https://processing.org) : GUI
  * [Spring Boot](https://spring.io/projects/spring-boot) : Backend
 

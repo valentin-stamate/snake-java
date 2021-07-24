@@ -1,3 +1,5 @@
+package window;
+
 import controller.HamiltonController;
 import controller.SinglePlayerController;
 import controller.SnakeController;
@@ -6,13 +8,18 @@ import processing.core.PApplet;
 import util.Config;
 import util.GameType;
 
-public class Main extends PApplet {
+public class MainWindow extends PApplet {
+
 
     public void settings() {
         size(Config.CANVAS_WIDTH, Config.CANVAS_HEIGHT);
     }
 
+
     public void setup() {
+        surface.setLocation(displayWidth / 2, displayHeight / 2 - height / 2);
+        surface.setTitle("Conquering The Snake");
+
         background(25);
         frameRate(Config.FRAMERATE);
         strokeCap(ROUND);
@@ -28,13 +35,8 @@ public class Main extends PApplet {
         };
 
         snakeController.run();
-
-
     }
+
 
     public void draw(){ }
-
-    public static void main(String... args){
-        PApplet.main("Main");
-    }
 }
