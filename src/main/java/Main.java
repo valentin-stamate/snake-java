@@ -21,19 +21,15 @@ public class Main extends PApplet {
 
         int gameType = Config.GAME_TYPE;
 
-        switch (gameType) {
-            case GameType.SINGLE_PLAYER:
-                snakeController = new SinglePlayerController(this);
-                break;
-            case GameType.TWO_PLAYERS:
-                snakeController = new TwoPlayersController(this);
-                break;
-            default:
-                snakeController = new HamiltonController(this);
-
-        }
+        snakeController = switch (gameType) {
+            case GameType.SINGLE_PLAYER -> new SinglePlayerController(this);
+            case GameType.TWO_PLAYERS -> new TwoPlayersController(this);
+            default -> new HamiltonController(this);
+        };
 
         snakeController.run();
+
+
     }
 
     public void draw(){ }

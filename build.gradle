@@ -14,6 +14,7 @@ dependencies {
     implementation 'org.apache.httpcomponents:httpclient:4.5'
     implementation 'org.jsoup:jsoup:1.13.1'
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.11.1'
+    implementation fileTree("library")
 
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.6.0'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'

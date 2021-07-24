@@ -3,10 +3,8 @@ package board;
 import board.snake.Snake;
 import observer.Observer;
 import observer.OnUpdateObserver;
-import panel.SideElements;
 import processing.core.PApplet;
 import util.Config;
-import util.GameType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -103,15 +101,6 @@ public class Board {
         pApplet.line(Config.BOARD_X + boardPWidth, Config.BOARD_Y, Config.BOARD_X + boardPWidth, Config.BOARD_Y + boardPHeight);
         pApplet.line(Config.BOARD_X, Config.BOARD_Y + boardPHeight, Config.BOARD_X + boardPWidth, Config.BOARD_Y + boardPHeight);
 
-        SideElements.drawTitle(pApplet);
-        SideElements.drawScore(pApplet);
-
-        if (Config.GAME_TYPE == GameType.SINGLE_PLAYER) {
-            SideElements.drawScoreFirstPlayer(pApplet);
-        } else if (Config.GAME_TYPE == GameType.TWO_PLAYERS) {
-            SideElements.drawScoreFirstPlayer(pApplet);
-            SideElements.drawScoreSecondPlayer(pApplet);
-        }
     }
 
     private void clearBoard() {
