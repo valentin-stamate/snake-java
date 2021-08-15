@@ -5,7 +5,7 @@ public abstract class Config {
 
     /* CANVAS */
     public static final int FRAMERATE = 60;
-    public static final int REFRESH_RATE = 2;
+    public static final int REFRESH_RATE = 10;
 
     /* BOARD */
     public static final int BOARD_WIDTH = 650;

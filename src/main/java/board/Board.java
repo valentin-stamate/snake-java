@@ -7,6 +7,7 @@ import processing.core.PApplet;
 import util.Config;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class Board {
@@ -38,6 +39,9 @@ public class Board {
     void makeSnakeStep() {
         for (Snake snake : snakeList) {
             snake.makeStep();
+            int[] vision = snake.getVision();
+            System.out.println(Arrays.toString(vision));
+
         }
     }
 
@@ -63,6 +67,19 @@ public class Board {
         for (Snake snake : snakeList) {
             snake.drawSnake();
         }
+    }
+
+    public boolean allSnakesFinished() {
+        int n = snakeList.size();
+
+        int snakesFinished = 0;
+        for (Snake snake : snakeList) {
+            if (snake.isFinished()) {
+                snakesFinished++;
+            }
+        }
+
+        return n == snakesFinished;
     }
 
     void drawBoard() {

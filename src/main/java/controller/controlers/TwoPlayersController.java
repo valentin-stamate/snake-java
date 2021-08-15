@@ -1,10 +1,11 @@
-package controller;
+package controller.controlers;
 
 import board.snake.Snake;
+import controller.SnakeController;
 import processing.core.PApplet;
 import processing.event.KeyEvent;
 
-public class TwoPlayersController extends SnakeController{
+public class TwoPlayersController extends SnakeController {
 
     private final Snake snakeA;
     private final Snake snakeB;

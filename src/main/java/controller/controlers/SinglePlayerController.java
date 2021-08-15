@@ -1,6 +1,7 @@
-package controller;
+package controller.controlers;
 
 import board.snake.Snake;
+import controller.SnakeController;
 import processing.core.PApplet;
 import processing.event.KeyEvent;
 

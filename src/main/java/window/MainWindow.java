@@ -1,9 +1,9 @@
 package window;
 
-import controller.HamiltonController;
-import controller.SinglePlayerController;
+import controller.controlers.HamiltonController;
+import controller.controlers.SinglePlayerController;
 import controller.SnakeController;
-import controller.TwoPlayersController;
+import controller.controlers.TwoPlayersController;
 import processing.core.PApplet;
 import util.Config;
 import util.GameType;
@@ -17,7 +17,7 @@ public class MainWindow extends PApplet {
 
 
     public void setup() {
-        surface.setLocation(displayWidth / 2, displayHeight / 2 - height / 2);
+//        surface.setLocation(displayWidth / 2, displayHeight / 2 - height / 2);
         surface.setTitle("Conquering The Snake");
 
         background(25);

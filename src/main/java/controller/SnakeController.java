@@ -13,7 +13,7 @@ public abstract class SnakeController {
     protected final List<Snake> snakeList;
     protected final PApplet pApplet;
 
-    SnakeController(PApplet pApplet) {
+    public SnakeController(PApplet pApplet) {
         this.pApplet = pApplet;
         this.snakeList = new ArrayList<>();
         this.board = new Board(pApplet, snakeList);

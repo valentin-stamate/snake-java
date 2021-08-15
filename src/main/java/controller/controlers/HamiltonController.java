@@ -1,6 +1,7 @@
-package controller;
+package controller.controlers;
 
 import board.snake.Snake;
+import controller.SnakeController;
 import controller.node.Node;
 import observer.OnUpdateObserver;
 import processing.core.PApplet;

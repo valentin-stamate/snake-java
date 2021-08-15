@@ -2,6 +2,7 @@ package board.snake;
 
 import board.CellType;
 import board.snake.food.Food;
+import controller.controlers.genetic.GeneticAiUtil;
 import observer.Observer;
 import observer.OnFinishObserver;
 import observer.OnFoodEaten;
@@ -11,6 +12,7 @@ import java.util.*;
 
 public class Snake {
 
+    /* dir[0] -> i, dir[1] -> j */
     private final int[] direction = new int[]{0, 1};
     private final int[][] boardMatrix;
 
@@ -155,7 +157,12 @@ public class Snake {
         for (OnFinishObserver observer : onFinishObservers) {
             observer.update(snakeData);
         }
+
         snakeFinished = true;
+    }
+
+    public boolean checkFoodCollision(int i, int j) {
+        return food.getI() == i && food.getJ() == j;
     }
 
     /* FOOD LOGIC */
@@ -176,10 +183,6 @@ public class Snake {
         int j = freeCells.get(rCellPosition) % Config.BOARD_COLUMNS;
 
         food.updateFoodPosition(i, j);
-    }
-
-    public boolean checkFoodCollision(int i, int j) {
-        return food.getI() == i && food.getJ() == j;
     }
 
     public void addPoint() {
@@ -228,6 +231,118 @@ public class Snake {
 
     public int[] getDirection() {
         return new int[]{direction[0], direction[1]};
+    }
+
+    /* Gets a 24 double vector  */
+    public int[] getVision() {
+
+        // degrees are in reverse because the coords are in reverse
+        int[] head = direction;
+        int[] west = GeneticAiUtil.reverse(GeneticAiUtil.rotateVectorInt(head[1], head[0], -90));
+        int[] south = GeneticAiUtil.reverse(GeneticAiUtil.rotateVectorInt(head[1], head[0], -180));
+        int[] east = GeneticAiUtil.reverse(GeneticAiUtil.rotateVectorInt(head[1], head[0], -270));
+
+        double[] rotationDiag =  GeneticAiUtil.reverse(GeneticAiUtil.rotateVector(head[1], head[0], -45));
+
+        int[] northWest = GeneticAiUtil.crushedDiagonalsToDirection(rotationDiag);
+        int[] southWest = GeneticAiUtil.reverse(GeneticAiUtil.rotateVectorInt(northWest[1], northWest[0], -90));
+        int[] southEast = GeneticAiUtil.reverse(GeneticAiUtil.rotateVectorInt(northWest[1], northWest[0], -180));
+        int[] northEast = GeneticAiUtil.reverse(GeneticAiUtil.rotateVectorInt(northWest[1], northWest[0], -270));
+
+        int i = getHeadI();
+        int j = getHeadJ();
+
+        int[] headData = getDirectionData(i, j, head);
+        int[] westData = getDirectionData(i, j, west);
+        int[] southData = getDirectionData(i, j, south);
+        int[] eastData = getDirectionData(i, j, east);
+
+        int[] northWestData = getDirectionData(i, j, northWest);
+        int[] southWestData = getDirectionData(i, j, southWest);
+        int[] southEastData = getDirectionData(i, j, southEast);
+        int[] northEastData = getDirectionData(i, j, northEast);
+
+        int[] vision = new int[8 * 3];
+
+        System.arraycopy(headData,      0, vision, 0, 3);
+        System.arraycopy(northWestData, 0, vision, 3, 3);
+        System.arraycopy(westData,      0, vision, 6, 3);
+        System.arraycopy(southWestData, 0, vision, 9, 3);
+        System.arraycopy(southData,     0, vision, 12, 3);
+        System.arraycopy(southEastData, 0, vision, 15, 3);
+        System.arraycopy(eastData,      0, vision, 18, 3);
+        System.arraycopy(northEastData, 0, vision, 21, 3);
+
+        return vision;
+    }
+
+    public double[] getNormalizedVision() {
+        return normalizeDistances(getVision());
+    }
+
+    private int[] getDirectionData(int i, int j, int[] direction) {
+        int rows = boardMatrix.length;
+        int cols = boardMatrix[0].length;
+
+        boolean foodFound = false;
+        boolean tailFound = false;
+
+        int foodDistance = 0;
+        int tailDistance = 0;
+        int wallDistance = 0;
+
+        for (; i < rows && i >= 0 && j < cols && j >= 0;
+               i += direction[0], j += direction[1]) {
+
+            if (!foodFound) {
+                foodDistance++;
+            }
+
+            wallDistance++;
+
+            if (!tailFound) {
+                tailDistance++;
+            }
+
+            if (checkFoodCollision(i, j)) {
+                foodFound = true;
+            }
+
+            if (!tailFound && checkTailCollision(i + direction[0], j + direction[1])) {
+                tailFound = true;
+            }
+
+        }
+
+        int maxDistance = Math.max(rows, cols);
+
+        if (!foodFound) {
+            foodDistance = maxDistance;
+        }
+
+        if (!tailFound) {
+            tailDistance = maxDistance;
+        }
+
+        if (tailFound) {
+            wallDistance = maxDistance;
+        }
+
+        return new int[]{foodDistance, tailDistance, wallDistance};
+    }
+
+    private double[] normalizeDistances(int[] distances) {
+        int n = distances.length;
+
+        double[] normalizedDistance = new double[n];
+
+        double max = Math.max(boardMatrix.length, boardMatrix[0].length);
+
+        for (int i = 0; i < n; i++) {
+            normalizedDistance[i] = 1.0 * distances[i] / max;
+        }
+
+        return normalizedDistance;
     }
 
     /* CHANGING DIRECTION */
