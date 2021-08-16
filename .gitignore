@@ -4,3 +4,5 @@ build
 *.jar
 /library
 /gradle
+ga/
+neural_network/

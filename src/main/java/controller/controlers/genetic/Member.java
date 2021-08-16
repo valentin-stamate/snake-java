@@ -23,12 +23,17 @@ public class Member extends AbstractMember {
 
     }
 
-    public void setScore(int score) {
+    public void setScore(double score) {
         super.score = score;
     }
 
     @Override
     public AbstractMember getCopy() {
-        return new Member(Arrays.copyOf(gene, gene.length));
+        Member member = new Member(Arrays.copyOf(gene, gene.length));
+
+        member.setScore(score);
+        member.calculateFitness();
+
+        return member;
     }
 }

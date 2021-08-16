@@ -5,6 +5,7 @@ import controller.SnakeController;
 import ga.AbstractGeneticAlgorithm;
 import ga.config.GaConfig;
 import ga.lambda.BeforeEvaluationEvent;
+import ga.lambda.observers.OnNewGeneration;
 import ga.member.AbstractMember;
 import ga.operators.crossover.AbstractCrossover;
 import ga.operators.crossover.OnePointCrossover;
@@ -12,11 +13,10 @@ import ga.operators.mutation.AbstractMutation;
 import ga.operators.mutation.SimpleMutation;
 import ga.operators.selection.AbstractSelection;
 import ga.operators.selection.TournamentSelection;
-import neural_network.NeuralNetwork;
 import processing.core.PApplet;
+import util.Config;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collections;
 
 public class GeneticAiController extends SnakeController {
 
@@ -27,17 +27,14 @@ public class GeneticAiController extends SnakeController {
     @Override
     public void run() {
 
-        int[] layerSize = new int[]{3, 4, 5, 3};
-        int geneLength = SmartSnake.calculateGeneLength(layerSize);
-
-        NeuralNetwork neuralNetwork = new NeuralNetwork(layerSize);
+        int geneLength = SmartSnake.calculateGeneLength(Config.LAYER_SIZE);
 
         GaConfig gaConfig = GaConfig.initializeWithParameters(
-                100,
+                800,
                 1000,
                 1,
                 geneLength,
-                0.0015,
+                0.0005,
                 0.02
         );
 
@@ -52,21 +49,18 @@ public class GeneticAiController extends SnakeController {
                 abstractSelection
         );
 
-        List<SmartSnake> smartSnakes = new ArrayList<>();
-
-        BeforeEvaluationEvent beforeEvaluationEvent = (population) -> {
-            for (AbstractMember abstractMember : population) {
+        BeforeEvaluationEvent beforeEvaluationEvent = (copyReferencePopulation) -> {
+            /* Put the population on the board */
+            snakeList.clear();
+            for (AbstractMember abstractMember : copyReferencePopulation) {
                 short[] gene = abstractMember.getGeneCopy();
 
-                Snake snake = new Snake(super.board.getBoardMatrix());
-                SmartSnake smartSnake = new SmartSnake(snake, gene, layerSize);
+                SmartSnake smartSnake = new SmartSnake(super.board.getBoardMatrix(), gene, Config.LAYER_SIZE);
 
-                smartSnakes.add(smartSnake);
-
-                snakeList.clear();
-                snakeList.add(smartSnake.getSnake());
+                snakeList.add(smartSnake);
             }
 
+            /* Wait until the all of them are done */
             while (!board.allSnakesFinished()) {
                 try {
                     Thread.sleep(100);
@@ -75,34 +69,31 @@ public class GeneticAiController extends SnakeController {
                 }
             }
 
+            /* TODO: implement a method in GA to print all scores */
+
+            /* Calculate the score (= fitness) */
             for (int i = 0; i < snakeList.size(); i++) {
                 Snake snake = snakeList.get(i);
-                AbstractMember abstractMember = population.get(i);
+                AbstractMember abstractMember = copyReferencePopulation.get(i);
 
-                ((Member) abstractMember).setScore(snake.getScore());
+                ((Member) abstractMember).setScore(snake.getScore() * 50 + snake.getSteps() / 10 + 1);
+                abstractMember.calculateFitness();
             }
 
         };
 
-        new Thread(abstractGeneticAlgorithm::start).start();
+        OnNewGeneration onNewGeneration = ((copyPopulation, generation) -> {
+            copyPopulation.sort(Collections.reverseOrder());
 
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+            System.out.printf("Generation %d. Best fitness %6.2f\n", generation, copyPopulation.get(0).getFitness());
+        });
+
+        abstractGeneticAlgorithm.addPopulationObserver(onNewGeneration);
+
+        abstractGeneticAlgorithm.addBeforeEvaluationObserver(beforeEvaluationEvent);
 
         super.board.start();
 
-        while (!board.allSnakesFinished()) {
-            for (SmartSnake smartSnake : smartSnakes) {
-                Snake snake = smartSnake.getSnake();
-
-                if (!snake.isFinished()) {
-                    smartSnake.predictNext();
-                }
-            }
-        }
-
+        new Thread(abstractGeneticAlgorithm::start).start();
     }
 }

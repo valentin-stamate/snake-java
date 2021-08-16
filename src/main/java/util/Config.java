@@ -1,11 +1,11 @@
 package util;
 
 public abstract class Config {
-    public static final int GAME_TYPE = GameType.SINGLE_PLAYER;
+    public static final int GAME_TYPE = GameType.GENETIC_AI;
 
     /* CANVAS */
     public static final int FRAMERATE = 60;
-    public static final int REFRESH_RATE = 10;
+    public static final int REFRESH_RATE = 1;
 
     /* BOARD */
     public static final int BOARD_WIDTH = 650;
@@ -22,4 +22,13 @@ public abstract class Config {
 
     public static final int BOARD_X = 2;
     public static final int BOARD_Y = 2;
+
+    /* NN & G */
+    public static final int[] LAYER_SIZE = new int[]{24, 16, 4};
+
+    public static final int START = -5;
+    public static final int END = 5;
+
+    public static final int PRECISION = 3;
+
 }

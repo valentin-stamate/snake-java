@@ -5,9 +5,7 @@ import observer.Observer;
 import observer.OnUpdateObserver;
 import processing.core.PApplet;
 import util.Config;
-
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class Board {
@@ -37,11 +35,9 @@ public class Board {
 
     /* SNAKES CONTROL */
     void makeSnakeStep() {
-        for (Snake snake : snakeList) {
+        for (int i = 0; i < snakeList.size(); i++) {
+            Snake snake = snakeList.get(i);
             snake.makeStep();
-            int[] vision = snake.getVision();
-            System.out.println(Arrays.toString(vision));
-
         }
     }
 
@@ -64,7 +60,8 @@ public class Board {
     }
 
     void drawSnakes() {
-        for (Snake snake : snakeList) {
+        for (int i = 0; i < snakeList.size(); i++) {
+            Snake snake = snakeList.get(i);
             snake.drawSnake();
         }
     }

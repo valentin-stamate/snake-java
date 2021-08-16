@@ -21,10 +21,11 @@ public class Snake {
 
     private boolean canChangeDirection = true;
     private boolean snakeIncrease = true;
-    private boolean snakeFinished = false;
+    protected boolean snakeFinished = false;
 
     private final Food food;
-    private int score;
+    protected int score;
+    protected int steps;
 
     private final List<OnFinishObserver> onFinishObservers;
     private final List<Observer> observerList;
@@ -35,7 +36,9 @@ public class Snake {
         this.snakeCellsHashSet = new HashSet<>();
         this.onFinishObservers = new ArrayList<>();
         this.observerList = new ArrayList<>();
+
         this.score = 0;
+        this.steps = 0;
 
         this.food = new Food(boardMatrix);
         initialize();
@@ -49,7 +52,7 @@ public class Snake {
         direction[0] = Util.generateRandom(-1, 2);
         direction[1] = 0;
         if (direction[0] == 0) {
-            direction[1] = Util.generateRandom(-1, 2);
+            direction[1] = 1;
         }
 
         initializeSnakePosition();
@@ -62,8 +65,11 @@ public class Snake {
     }
 
     private void initializeSnakePosition() {
-        int currentI = Config.BOARD_ROWS / 2 + Util.generateRandom(-7, 7);
-        int currentJ = Config.BOARD_COLUMNS / 2 + Util.generateRandom(-7, 7);
+//        int currentI = Config.BOARD_ROWS / 2 + Util.generateRandom(-7, 7);
+//        int currentJ = Config.BOARD_COLUMNS / 2 + Util.generateRandom(-7, 7);
+
+        int currentI = Config.BOARD_ROWS / 2;
+        int currentJ = Config.BOARD_COLUMNS / 2;
 
         if (Config.BOARD_COLUMNS < 10) {
             currentI = 2;
@@ -129,6 +135,8 @@ public class Snake {
         }
 
         canChangeDirection = true;
+
+        steps++;
     }
 
     /* DRAWING LOGIC */
@@ -187,7 +195,7 @@ public class Snake {
 
     public void addPoint() {
         snakeIncrease = true;
-        score+= 5;
+        score++;
 
         for (Observer observer : observerList) {
             if (observer instanceof OnFoodEaten) {
@@ -235,7 +243,6 @@ public class Snake {
 
     /* Gets a 24 double vector  */
     public int[] getVision() {
-
         // degrees are in reverse because the coords are in reverse
         int[] head = direction;
         int[] west = GeneticAiUtil.reverse(GeneticAiUtil.rotateVectorInt(head[1], head[0], -90));
@@ -264,10 +271,10 @@ public class Snake {
 
         int[] vision = new int[8 * 3];
 
-        System.arraycopy(headData,      0, vision, 0, 3);
-        System.arraycopy(northWestData, 0, vision, 3, 3);
-        System.arraycopy(westData,      0, vision, 6, 3);
-        System.arraycopy(southWestData, 0, vision, 9, 3);
+        System.arraycopy(headData,      0, vision,  0, 3);
+        System.arraycopy(northWestData, 0, vision,  3, 3);
+        System.arraycopy(westData,      0, vision,  6, 3);
+        System.arraycopy(southWestData, 0, vision,  9, 3);
         System.arraycopy(southData,     0, vision, 12, 3);
         System.arraycopy(southEastData, 0, vision, 15, 3);
         System.arraycopy(eastData,      0, vision, 18, 3);
@@ -336,7 +343,7 @@ public class Snake {
 
         double[] normalizedDistance = new double[n];
 
-        double max = Math.max(boardMatrix.length, boardMatrix[0].length);
+        double max = Math.max(boardMatrix.length, boardMatrix[0].length) + 1;
 
         for (int i = 0; i < n; i++) {
             normalizedDistance[i] = 1.0 * distances[i] / max;
@@ -384,5 +391,9 @@ public class Snake {
         direction[0] = 1;
         direction[1] = 0;
         canChangeDirection = false;
+    }
+
+    public int getSteps() {
+        return steps;
     }
 }

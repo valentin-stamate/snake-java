@@ -115,4 +115,14 @@ public class GeneticAiUtil {
         return newDir;
     }
 
+    public static double getMax(double[] vector) {
+        double max = 0;
+
+        for (double x : vector) {
+            max = Math.max(x, max);
+        }
+
+        return max;
+    }
+
 }
